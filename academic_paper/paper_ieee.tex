@@ -86,7 +86,7 @@ The proposed system follows a \emph{Hybrid Multimodal Architecture}, which selec
 \end{figure*}
 
 \subsection{Interaction Layer and Artifact Rendering}
-To support dynamic karaoke-style highlighting, the pipeline uses a midpoint-based word grouper rather than strict boundary assignment. This reduces boundary-drop cases, while the corpus evaluation recorded zero temporal overlaps across adjacent words.
+To support dynamic karaoke-style highlighting, the pipeline uses a midpoint-based word grouper rather than strict boundary assignment. In the evaluated corpus, this configuration recorded zero temporal overlaps across adjacent words; stronger claims about boundary-drop reduction are left outside the present evidence scope.
 
 Native HTML5 \texttt{<track>} elements lack the styling affordances required for granular, stateful word-by-word highlighting (e.g., current, previous, spoken, and upcoming states). Therefore, the web player uses a custom subtitle renderer with user-selectable typography and high-contrast settings.
 
