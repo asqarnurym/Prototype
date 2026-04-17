@@ -1,0 +1,19 @@
+Testing TTS latency using provider: google
+
+--- Cold Start Test ---
+Cold #0: 4903.3 ms
+Cold #1: 2580.6 ms
+Cold #2: 2642.6 ms
+Cold #3: 2687.1 ms
+Cold #4: 2682.6 ms
+
+--- Cached Playback Test ---
+Cached #0: 0.07 ms
+Cached #1: 0.05 ms
+Cached #2: 0.06 ms
+Cached #3: 0.06 ms
+Cached #4: 0.06 ms
+
+=== Latency Summary ===
+Median Cold TTS: 2682.6 ms
+Median Cached TTS: 0.06 ms

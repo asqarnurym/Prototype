@@ -1,0 +1,54 @@
+# ── Prototype — files that should NOT go into git ───────────
+
+# Environment variables and API keys
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+.venv/
+
+# Temporary files (audio, frames, TTS)
+temp/
+
+# Output artifacts (too large for git)
+output/
+
+# Input videos (also large)
+input/*.mp4
+input/*.avi
+input/*.mkv
+input/corpus_finevideo/
+input/corpus_normalized/
+input/corpus_finevideo_metadata/
+
+# Evaluation generated manifests and run outputs
+evaluation/finevideo_selected_manifest_downloaded.csv
+evaluation/finevideo_selected_manifest_normalized.csv
+evaluation/corpus_manifest_seeded.csv
+evaluation/corpus_manifest_normalized.csv
+evaluation/run_*/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Linters / tools
+.ruff_cache/
+.playwright-cli/
+.pytest_cache/
+
+# Logs
+logs/
+
+# Build
+dist/
+build/
+
+# OS
+Thumbs.db
+.DS_Store
