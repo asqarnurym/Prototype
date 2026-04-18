@@ -1,0 +1,689 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Prototype API",
+    "description": "API для обработки учебных видео для доступности. On-demand аудиодескрипция: описания сцен генерируются при предобработке, TTS озвучивается по запросу пользователя.",
+    "version": "0.2.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Проверка работоспособности сервера.\nВозвращает текущую конфигурацию (без секретов).",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/process": {
+      "post": {
+        "summary": "Process Video Endpoint",
+        "description": "Предобработка учебного видео (Асинхронно).\n\nВыполняет ASR, детекцию сцен и генерацию текстовых описаний сцен.\nTTS НЕ выполняется (on-demand по запросу через /describe).\n\nЗадача запускается в фоне, эндпоинт сразу возвращает job_id и status='queued'.",
+        "operationId": "process_video_endpoint_process_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProcessVideoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcessVideoResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs": {
+      "get": {
+        "summary": "List Jobs",
+        "description": "Список обработанных видео (job_id) с метаданными.",
+        "operationId": "list_jobs_jobs_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}/meta": {
+      "get": {
+        "summary": "Get Job Meta",
+        "description": "Метаданные job: язык, настройки, статистика.",
+        "operationId": "get_job_meta_jobs__job_id__meta_get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}/scenes": {
+      "get": {
+        "summary": "Get Scenes",
+        "description": "Список проиндексированных сцен для данного job.\n\nВозвращает описания сцен из scene_index.json.\nЭто то, что клиент может показать в UI как список\nдоступных аудиодескрипций.",
+        "operationId": "get_scenes_jobs__job_id__scenes_get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}/describe": {
+      "post": {
+        "summary": "Describe Scene",
+        "description": "On-demand аудиодескрипция: генерирует TTS для ближайшей сцены.\n\n1. Находит ближайшую сцену к указанному времени\n2. Если TTS уже есть в кэше — возвращает из кэша\n3. Иначе генерирует TTS (edge-tts, бесплатно) и кэширует\n\nЗадержка: ~1-2 секунды (только TTS).",
+        "operationId": "describe_scene_jobs__job_id__describe_post",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DescribeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DescribeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}/tts/{scene_id}": {
+      "get": {
+        "summary": "Get Tts Audio",
+        "description": "Отдаёт кэшированный TTS аудиофайл.",
+        "operationId": "get_tts_audio_jobs__job_id__tts__scene_id__get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          },
+          {
+            "name": "scene_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Scene Id"
+            }
+          },
+          {
+            "name": "language",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "en",
+              "title": "Language"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "audio/mpeg": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/process_video": {
+      "post": {
+        "summary": "Process Video Legacy",
+        "description": "Deprecated endpoint. Use POST /process instead.",
+        "operationId": "process_video_legacy_process_video_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProcessVideoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcessVideoResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true
+      }
+    },
+    "/jobs/{job_id}/summary": {
+      "get": {
+        "summary": "Get Summary",
+        "description": "Генерирует краткую сводку видео для ADHD/дислексия пользователей.\n\nИспользует описания сцен из scene_index.json для создания\nструктурированной сводки. Результат кэшируется.\n\nСводка помогает пользователю:\n- Понять структуру видео до просмотра\n- Найти нужный раздел быстрее (chapter markers)\n- Снизить когнитивную нагрузку при ADHD/дислексии",
+        "operationId": "get_summary_jobs__job_id__summary_get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}/video": {
+      "get": {
+        "summary": "Get Video",
+        "description": "Отдаёт исходное видео для воспроизведения в плеере.",
+        "operationId": "get_video_jobs__job_id__video_get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "video/mp4": {},
+              "video/webm": {},
+              "video/x-matroska": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}/subtitles": {
+      "get": {
+        "summary": "Get Subtitles",
+        "description": "Отдаёт VTT субтитры.",
+        "operationId": "get_subtitles_jobs__job_id__subtitles_get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/vtt": {}
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}/words": {
+      "get": {
+        "summary": "Get Words",
+        "description": "Отдаёт word-level timestamps из timeline.json.\n\nИспользуется для караоке-субтитров (word-by-word highlight).\nКаждое слово содержит start, end, word. Сегменты группируют\nслова в фразы для отображения на экране.",
+        "operationId": "get_words_jobs__job_id__words_get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/favicon.ico": {
+      "get": {
+        "summary": "Favicon",
+        "description": "Пустой favicon — подавляет 404 в логах браузера.",
+        "operationId": "favicon_favicon_ico_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Serve Ui",
+        "description": "Отдаёт минимальный web UI.",
+        "operationId": "serve_ui__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DescribeRequest": {
+        "properties": {
+          "time": {
+            "type": "number",
+            "title": "Time",
+            "description": "Текущее время видео (секунды)"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language",
+            "description": "Язык TTS (en/ru)",
+            "default": "en"
+          }
+        },
+        "type": "object",
+        "required": [
+          "time"
+        ],
+        "title": "DescribeRequest",
+        "description": "Запрос на on-demand описание сцены."
+      },
+      "DescribeResponse": {
+        "properties": {
+          "scene_id": {
+            "type": "integer",
+            "title": "Scene Id"
+          },
+          "time": {
+            "type": "number",
+            "title": "Time"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "tts_audio_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tts Audio Url"
+          },
+          "tts_duration_sec": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tts Duration Sec"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scene_id",
+          "time",
+          "description"
+        ],
+        "title": "DescribeResponse",
+        "description": "Ответ с описанием сцены."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ProcessVideoRequest": {
+        "properties": {
+          "video_path": {
+            "type": "string",
+            "title": "Video Path",
+            "description": "Путь к входному видеофайлу"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language",
+            "description": "Язык видео (en/ru)",
+            "default": "en"
+          },
+          "enable_visual": {
+            "type": "boolean",
+            "title": "Enable Visual",
+            "description": "Включить визуальный pipeline",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "video_path"
+        ],
+        "title": "ProcessVideoRequest",
+        "description": "Запрос на обработку видео.",
+        "example": {
+          "enable_visual": true,
+          "language": "en",
+          "video_path": "./input/lecture.mp4"
+        }
+      },
+      "ProcessVideoResponse": {
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "title": "Job Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "processing_time_sec": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Processing Time Sec"
+          },
+          "artifacts": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Artifacts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "status",
+          "artifacts"
+        ],
+        "title": "ProcessVideoResponse",
+        "description": "Ответ на обработку видео."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

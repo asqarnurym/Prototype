@@ -1,0 +1,17 @@
+.env
+.git
+.venv
+__pycache__
+.pytest_cache
+.ruff_cache
+academic_paper
+evaluation
+figures
+input
+logs
+output
+temp
+*.pyc
+*.pyo
+*.pyd
+*.log

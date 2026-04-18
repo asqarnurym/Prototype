@@ -2,6 +2,8 @@
 
 # Environment variables and API keys
 .env
+*.json.key
+*service-account*.json
 
 # Python
 __pycache__/
@@ -9,6 +11,7 @@ __pycache__/
 *.egg-info/
 venv/
 .venv/
+.python-version
 
 # Temporary files (audio, frames, TTS)
 temp/
@@ -20,6 +23,10 @@ output/
 input/*.mp4
 input/*.avi
 input/*.mkv
+input/**/*.mp4
+input/**/*.avi
+input/**/*.mkv
+input/_uploads/
 input/corpus_finevideo/
 input/corpus_normalized/
 input/corpus_finevideo_metadata/
@@ -41,14 +48,31 @@ evaluation/run_*/
 .ruff_cache/
 .playwright-cli/
 .pytest_cache/
+.playwright-mcp/
+.uv-cache/
+.sisyphus/
 
 # Logs
 logs/
+uvicorn-qa.log
 
 # Build
 dist/
 build/
+academic_paper/Paper-output/
+academic_paper/*.pdf
+selected_articles_conference/*.pdf
+template/*.pdf
+*.synctex.gz
+*.aux
+*.fdb_latexmk
+*.fls
+*.out
+*.toc
 
 # OS
 Thumbs.db
 .DS_Store
+
+# Old local agent/audit residue
+.omx/

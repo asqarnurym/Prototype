@@ -1,0 +1,29 @@
+Selected references for conference paper
+Folder uses short filenames to avoid Windows path-length issues.
+
+01. [OK] R01_Gernsbacher2015_VideoCaptionsBenefitEveryone.pdf
+    original: Video Captions Benefit Everyone.pdf
+02. [OK] R02_MalakulPark2023_AutoSubtitleEducationalVideos.pdf
+    original: The effects of using an auto‑subtitle system in educational videos to facilitate learning for secondary school students learning comprehension, cognitive load, and satisfaction.pdf
+03. [OK] R03_Mirzaei2018_ASRErrorsPartialSynchronizedCaption.pdf
+    original: Exploiting Automatic Speech Recognition Errors to Enhance Partial and Synchronized Caption for Facilitating Second Language Listening.pdf
+04. [OK] R04_Mayer2020_FiveWaysInstructionalVideo.pdf
+    original: Five ways to increase the effectiveness of instructional video.pdf
+05. [OK] R05_CastroAlonso2021_FiveStrategiesCognitiveLoad.pdf
+    original: Five Strategies for Optimizing Instructional Materials Instructor- and Learner-Managed Cognitive Load.pdf
+06. [OK] R06_LangeCostley2020_ImprovingOnlineVideoLectures.pdf
+    original: Improving online video lectures learning challenges created by media.pdf
+07. [OK] R07_KrugerDoherty2016_MeasuringCognitiveLoadVideo.pdf
+    original: Measuring cognitive load in the presence of educational video Towards a multimodal methodology.pdf
+08. [OK] R08_LeCunff2024_NeurodiversityCognitiveLoadOnline.pdf
+    original: Neurodiversity and cognitive load in online learning A focus group study.pdf
+09. [OK] R09_Horlin2024_LectureCaptureDisabledNeurodivergent.pdf
+    original: I can be a “normal” student the role of lecture capture in supporting disabled and neurodivergent students’ participation in higher education.pdf
+10. [OK] R10_Malik2020_ASRSurvey.pdf
+    original: Automatic speech recognition a survey.pdf
+11. [OK] R11_Radford2022_WhisperLargeScaleWeakSupervision.pdf
+    original: Robust Speech Recognition via Large-Scale Weak Supervision.pdf
+12. [OK] R12_Bain2023_WhisperX.pdf
+    original: WhisperX Time-Accurate Speech Transcription of Long-Form Audio.pdf
+13. [OK] R13_Wagner2024_CrisperWhisper.pdf
+    original: CrisperWhisper_Accurate Timestamps on Verbatim Speech Transcriptions.pdf

@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prototype — Accessible Video Player</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --page-bg: #101826;
+    --panel-bg: #172334;
+    --panel-border: #2f425d;
+    --surface-bg: #0d1521;
+    --text-main: #edf3ff;
+    --text-muted: #b8c6dd;
+    --text-soft: #91a0bb;
+    --accent: #72b6ff;
+    --accent-strong: #1f70d2;
+    --accent-soft: rgba(114, 182, 255, 0.14);
+    --success: #8ae0a1;
+    --danger: #ff9a9a;
+    --focus-ring: 0 0 0 3px rgba(114, 182, 255, 0.4);
+    --radius: 16px;
+    --ui-scale: 1;
+    --subtitle-scale: 1;
+    --subtitle-bg: rgba(0, 0, 0, 0.82);
+    --subtitle-color: rgba(255, 255, 255, 0.94);
+    --subtitle-dim: rgba(255, 255, 255, 0.42);
+    --subtitle-current: #ffd166;
+    --subtitle-previous: #ffe7a4;
+  }
+
+  * { box-sizing: border-box; }
+
+  @font-face {
+    font-family: 'OpenDyslexic';
+    src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/woff/OpenDyslexic-Regular.woff') format('woff');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  html, body {
+    margin: 0;
+    min-height: 100%;
+  }
+
+  body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(180deg, #0d1420 0%, var(--page-bg) 100%);
+    color: var(--text-main);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  #uiSurface {
+    font-size: calc(1em * var(--ui-scale));
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  button,
+  input,
+  select {
+    border-radius: 12px;
+    border: 1px solid var(--panel-border);
+  }
+
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+
+  .page-shell {
+    width: min(1120px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 24px 0 40px;
+  }
+
+  .page-header {
+    margin-bottom: 20px;
+  }
+
+  .page-title {
+    margin: 0 0 8px;
+    font-size: 2em;
+    line-height: 1.1;
+  }
+
+  .page-subtitle {
+    margin: 0;
+    color: var(--text-muted);
+    max-width: 72ch;
+  }
+
+  .layout-grid {
+    display: grid;
+    gap: 20px;
+  }
+
+  .panel {
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)), var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius);
+    padding: 18px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.24);
+  }
+
+  .panel h2,
+  .panel h3 {
+    margin: 0 0 10px;
+    font-size: 1.08em;
+  }
+
+  .panel-intro {
+    margin: 0 0 14px;
+    color: var(--text-muted);
+  }
+
+  .stack {
+    display: grid;
+    gap: 12px;
+  }
+
+  .field-row,
+  .inline-fields {
+    display: grid;
+    gap: 12px;
+  }
+
+  .inline-fields {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+
+  label,
+  .group-label,
+  .setting-value {
+    color: var(--text-muted);
+  }
+
+  .field-label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+
+  input[type="text"],
+  select {
+    width: 100%;
+    padding: 11px 13px;
+    background: var(--surface-bg);
+    color: var(--text-main);
+  }
+
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-muted);
+  }
+
+  .checkbox-row input {
+    inline-size: 1.1em;
+    block-size: 1.1em;
+  }
+
+  .action-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .btn-primary,
+  .btn-secondary,
+  .a11y-btn {
+    padding: 10px 14px;
+    background: var(--surface-bg);
+    color: var(--text-main);
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+  }
+
+  .btn-primary:hover,
+  .btn-secondary:hover,
+  .a11y-btn:hover {
+    transform: translateY(-1px);
+  }
+
+  .btn-primary {
+    background: var(--accent-strong);
+    border-color: #4b91e8;
+    color: white;
+    font-weight: 700;
+  }
+
+  .btn-secondary {
+    background: #162131;
+  }
+
+  .btn-primary:disabled,
+  .btn-secondary:disabled,
+  .a11y-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+    transform: none;
+  }
+
+  .status-text {
+    margin: 0;
+    color: var(--text-muted);
+  }
+
+  .status-text.success { color: var(--success); }
+  .status-text.error { color: var(--danger); }
+
+  .settings-grid {
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  }
+
+  .setting-card {
+    border: 1px solid var(--panel-border);
+    border-radius: 14px;
+    padding: 14px;
+    background: rgba(7, 13, 22, 0.28);
+  }
+
+  .setting-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    align-items: baseline;
+    margin-bottom: 10px;
+  }
+
+  .setting-title {
+    font-weight: 700;
+  }
+
+  .button-cluster {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .a11y-btn.is-active {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: #dff0ff;
+  }
+
+  .video-shell {
+    display: grid;
+    gap: 14px;
+  }
+
+  .video-frame {
+    position: relative;
+    width: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    background: black;
+  }
+
+  video {
+    display: block;
+    width: 100%;
+    background: black;
+  }
+
+  .subtitle-overlay {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 18px;
+    display: flex;
+    justify-content: center;
+    padding: 0 20px;
+    pointer-events: none;
+    font-size: calc(1em / var(--ui-scale));
+  }
+
+  .subtitle-overlay.is-hidden {
+    opacity: 0;
+  }
+
+  .subtitle-line {
+    display: inline;
+    max-width: min(90%, 920px);
+    padding: 8px 14px;
+    border-radius: 10px;
+    background: var(--subtitle-bg);
+    line-height: 1.65;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+
+  .subtitle-word {
+    color: var(--subtitle-dim);
+    font-size: calc(1.1em * var(--subtitle-scale));
+    transition: color 0.12s ease, text-shadow 0.12s ease;
+  }
+
+  .subtitle-word.uniform,
+  .subtitle-word.spoken {
+    color: var(--subtitle-color);
+  }
+
+  .subtitle-word.previous {
+    color: var(--subtitle-previous);
+  }
+
+  .subtitle-word.current {
+    color: var(--subtitle-current);
+    font-weight: 800;
+    text-shadow: 0 0 10px rgba(255, 209, 102, 0.5);
+  }
+
+  .player-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .player-controls select {
+    width: auto;
+    min-width: 110px;
+  }
+
+  .lang-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 9px;
+    border-radius: 999px;
+    border: 1px solid var(--panel-border);
+    background: var(--surface-bg);
+    color: var(--text-muted);
+    font-size: 0.9em;
+  }
+
+  .reading-surface {
+    background: var(--surface-bg);
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 14px;
+    padding: 14px;
+    min-height: 56px;
+  }
+
+  .description-text,
+  .summary-content,
+  .chapter-title,
+  .scene-desc {
+    color: var(--text-main);
+  }
+
+  .description-text.is-empty,
+  .summary-placeholder,
+  .list-placeholder {
+    color: var(--text-soft);
+  }
+
+  .meta-row {
+    margin-top: 8px;
+    color: var(--text-soft);
+    font-size: 0.92em;
+  }
+
+  .tab-bar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+
+  .tab-btn {
+    padding: 9px 13px;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+
+  .tab-btn.is-active {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--text-main);
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.is-active { display: block; }
+
+  .item-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 10px;
+  }
+
+  .item-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+    align-items: start;
+    width: 100%;
+    padding: 12px;
+    border-radius: 14px;
+    border: 1px solid var(--panel-border);
+    background: var(--surface-bg);
+    color: var(--text-main);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .item-card.is-active {
+    border-color: var(--accent);
+    background: rgba(114, 182, 255, 0.12);
+  }
+
+  .item-time {
+    color: var(--accent);
+    font-family: Consolas, monospace;
+    white-space: nowrap;
+  }
+
+  .keyboard-hint {
+    margin: 0;
+    color: var(--text-soft);
+    font-size: 0.95em;
+  }
+
+  kbd {
+    display: inline-block;
+    min-width: 1.8em;
+    padding: 2px 6px;
+    border-radius: 8px;
+    border: 1px solid var(--panel-border);
+    background: var(--surface-bg);
+    font-family: Consolas, monospace;
+    text-align: center;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+  }
+
+  body.font-dyslexic,
+  body.font-dyslexic button,
+  body.font-dyslexic input,
+  body.font-dyslexic select {
+    font-family: "OpenDyslexic", "Segoe UI", sans-serif;
+  }
+
+  body.font-dyslexic .subtitle-word,
+  body.font-dyslexic .description-text,
+  body.font-dyslexic .summary-content,
+  body.font-dyslexic .chapter-title,
+  body.font-dyslexic .scene-desc {
+    letter-spacing: 0.04em;
+    word-spacing: 0.12em;
+  }
+
+  body.line-spacing-wide .description-text,
+  body.line-spacing-wide .summary-content,
+  body.line-spacing-wide .summary-content li,
+  body.line-spacing-wide .chapter-title,
+  body.line-spacing-wide .scene-desc,
+  body.line-spacing-wide .subtitle-line {
+    line-height: 2;
+  }
+
+  body.line-spacing-wide .reading-surface,
+  body.line-spacing-wide .item-card,
+  body.line-spacing-wide .field-label,
+  body.line-spacing-wide .panel-intro,
+  body.line-spacing-wide .status-text,
+  body.line-spacing-wide .a11y-btn,
+  body.line-spacing-wide input,
+  body.line-spacing-wide select,
+  body.line-spacing-wide .subtitle-line,
+  body.line-spacing-wide .subtitle-word {
+    letter-spacing: 0.03em;
+    word-spacing: 0.16em;
+  }
+
+  body.line-spacing-wide .summary-content li,
+  body.line-spacing-wide .item-card {
+    margin-block-end: 4px;
+  }
+
+  body.high-contrast {
+    --page-bg: #000;
+    --panel-bg: #050505;
+    --panel-border: #8f8f8f;
+    --surface-bg: #000;
+    --text-main: #fff;
+    --text-muted: #f0f0f0;
+    --text-soft: #d8d8d8;
+    --accent: #fff86d;
+    --accent-strong: #fff86d;
+    --accent-soft: rgba(255, 248, 109, 0.16);
+    --subtitle-bg: rgba(0, 0, 0, 0.96);
+    --subtitle-color: #fff;
+    --subtitle-dim: rgba(255,255,255,0.6);
+    --subtitle-current: #fff86d;
+    --subtitle-previous: #fff2aa;
+  }
+
+  body.high-contrast .btn-primary {
+    background: var(--accent-strong);
+    border-color: #fff;
+    color: #000;
+  }
+
+  body.high-contrast .btn-primary:hover,
+  body.high-contrast .btn-primary:focus-visible {
+    color: #000;
+  }
+
+  @media (max-width: 720px) {
+    .page-shell {
+      width: min(100% - 20px, 1120px);
+      padding-top: 18px;
+    }
+
+    .panel {
+      padding: 16px;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="page-shell" id="uiSurface">
+    <header class="page-header">
+      <h1 class="page-title">Prototype — Accessible Video Review</h1>
+      <p class="page-subtitle">Process a video, review the output, and use a single accessible subtitle path with scene descriptions, chapters, and summary support.</p>
+    </header>
+
+    <main class="layout-grid">
+      <section class="panel" aria-labelledby="processPanelTitle">
+        <h2 id="processPanelTitle">Process a video by server path</h2>
+        <p class="panel-intro">This UI uses the existing server-side <code>/process</code> workflow. Enter a path the server can read.</p>
+        <form id="processVideoForm" class="stack">
+          <div>
+            <label class="field-label" for="videoFileInput">Upload a video file</label>
+            <input id="videoFileInput" name="video_file" type="file" accept="video/*">
+          </div>
+          <div>
+            <label class="field-label" for="videoPathInput">Video path</label>
+            <input id="videoPathInput" name="video_path" type="text" placeholder="./input/lecture.mp4" autocomplete="off">
+          </div>
+          <div class="inline-fields">
+            <div>
+              <label class="field-label" for="processLanguage">Language</label>
+              <select id="processLanguage" name="language">
+                <option value="en">English</option>
+                <option value="ru">Russian</option>
+              </select>
+            </div>
+            <div class="checkbox-row" style="padding-top: 30px;">
+              <input id="enableVisualInput" name="enable_visual" type="checkbox" checked>
+              <label for="enableVisualInput">Generate scenes and summary</label>
+            </div>
+          </div>
+          <div class="action-row">
+            <button class="btn-primary" id="processSubmitBtn" type="submit">Start processing</button>
+            <p class="status-text" id="processStatus" role="status" aria-live="polite">No job started yet.</p>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel" aria-labelledby="jobPanelTitle">
+        <h2 id="jobPanelTitle">Choose a processed job</h2>
+        <label class="field-label" for="jobSelect">Processed video</label>
+        <select id="jobSelect" aria-describedby="jobHelpText">
+          <option value="">Loading jobs...</option>
+        </select>
+        <p class="panel-intro" id="jobHelpText">Select an existing job to load the video, summary, chapters, scenes, and custom subtitle data.</p>
+      </section>
+
+      <section class="panel" aria-labelledby="settingsTitle">
+        <h2 id="settingsTitle">Accessibility settings</h2>
+        <div class="settings-grid">
+          <div class="setting-card">
+            <div class="setting-head">
+              <span class="setting-title">UI text size</span>
+              <span class="setting-value" id="uiFontSizeValue">100%</span>
+            </div>
+            <div class="button-cluster">
+              <button class="a11y-btn" type="button" onclick="changeUiFontSize(-1)" aria-label="Decrease interface text size">A-</button>
+              <button class="a11y-btn" type="button" onclick="changeUiFontSize(0)" aria-label="Reset interface text size">A</button>
+              <button class="a11y-btn" type="button" onclick="changeUiFontSize(1)" aria-label="Increase interface text size">A+</button>
+            </div>
+          </div>
+
+          <div class="setting-card">
+            <div class="setting-head">
+              <span class="setting-title">Subtitle size</span>
+              <span class="setting-value" id="subtitleFontSizeValue">100%</span>
+            </div>
+            <div class="button-cluster">
+              <button class="a11y-btn" type="button" onclick="changeSubtitleFontSize(-1)" aria-label="Decrease subtitle size">A-</button>
+              <button class="a11y-btn" type="button" onclick="changeSubtitleFontSize(0)" aria-label="Reset subtitle size">A</button>
+              <button class="a11y-btn" type="button" onclick="changeSubtitleFontSize(1)" aria-label="Increase subtitle size">A+</button>
+            </div>
+          </div>
+
+          <div class="setting-card">
+            <div class="setting-head">
+              <span class="setting-title">Subtitle mode</span>
+            </div>
+            <label class="field-label" for="subtitleMode">Display mode</label>
+            <select id="subtitleMode" onchange="changeSubtitleMode()" aria-label="Subtitle display mode">
+              <option value="word">Word-by-word</option>
+              <option value="standard">Standard</option>
+              <option value="off">Off</option>
+            </select>
+          </div>
+
+          <div class="setting-card">
+            <div class="setting-head">
+              <span class="setting-title">Reading support</span>
+            </div>
+            <div class="button-cluster">
+              <button class="a11y-btn" id="btnDyslexicFont" type="button" onclick="toggleDyslexicFont()" aria-pressed="false">Dyslexia font</button>
+              <button class="a11y-btn" id="btnLineSpacing" type="button" onclick="toggleLineSpacing()" aria-pressed="false">Wide spacing</button>
+              <button class="a11y-btn" id="btnHighContrast" type="button" onclick="toggleHighContrast()" aria-pressed="false">High contrast</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel video-shell" aria-labelledby="playerTitle">
+        <div class="action-row" style="justify-content: space-between; align-items: baseline;">
+          <h2 id="playerTitle">Video player</h2>
+          <span class="lang-badge" id="langBadge" aria-label="Selected language">--</span>
+        </div>
+
+        <div class="video-frame">
+          <video id="videoPlayer" controls aria-label="Educational video player">
+            Your browser does not support the video element.
+          </video>
+          <div class="subtitle-overlay is-hidden" id="subOverlay" aria-live="off">
+            <span class="subtitle-line" id="subLine"></span>
+          </div>
+        </div>
+
+        <div class="player-controls" aria-label="Description and playback tools">
+          <button class="btn-primary" id="describeBtn" type="button" onclick="requestDescription()">Describe scene</button>
+          <button class="btn-secondary" id="stopDescribeBtn" type="button" onclick="stopDescription(true)">Stop description</button>
+          <label class="field-label" for="speedSelect" style="margin: 0;">Speed</label>
+          <select id="speedSelect" onchange="changeSpeed()" aria-label="Playback speed">
+            <option value="0.5">0.5x</option>
+            <option value="0.75">0.75x</option>
+            <option value="1" selected>1x</option>
+            <option value="1.25">1.25x</option>
+            <option value="1.5">1.5x</option>
+            <option value="2">2x</option>
+          </select>
+        </div>
+
+        <p class="keyboard-hint" aria-hidden="true">Keyboard: <kbd>D</kbd> describe scene · <kbd>S</kbd> stop description</p>
+      </section>
+
+      <section class="panel" aria-labelledby="descriptionTitle">
+        <h2 id="descriptionTitle">Scene description</h2>
+        <div class="reading-surface description-text is-empty" id="descriptionText" role="status" aria-live="polite" aria-atomic="true">Load a processed job, then press “Describe scene” or use the D key.</div>
+        <div class="meta-row" id="descriptionMeta"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="navigationTitle">
+        <h2 id="navigationTitle">Summary and navigation</h2>
+        <div class="tab-bar" role="tablist" aria-label="Summary and navigation tabs">
+          <button class="tab-btn is-active" id="tabBtnSummary" type="button" role="tab" aria-selected="true" aria-controls="tabSummary" onclick="switchTab('Summary')">Summary</button>
+          <button class="tab-btn" id="tabBtnChapters" type="button" role="tab" aria-selected="false" aria-controls="tabChapters" onclick="switchTab('Chapters')">Chapters</button>
+          <button class="tab-btn" id="tabBtnScenes" type="button" role="tab" aria-selected="false" aria-controls="tabScenes" onclick="switchTab('Scenes')">Scenes</button>
+        </div>
+
+        <div class="tab-panel is-active" id="tabSummary" role="tabpanel" aria-labelledby="tabBtnSummary">
+          <div class="reading-surface summary-content" id="summaryContent">
+            <p class="summary-placeholder">Load a job to read the summary.</p>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="tabChapters" role="tabpanel" aria-labelledby="tabBtnChapters">
+          <ul class="item-list" id="chapterList">
+            <li class="list-placeholder">Load a job to browse chapters.</li>
+          </ul>
+        </div>
+
+        <div class="tab-panel" id="tabScenes" role="tabpanel" aria-labelledby="tabBtnScenes">
+          <ul class="item-list" id="sceneList">
+            <li class="list-placeholder">Load a job to browse scenes.</li>
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <div class="sr-only" id="srAnnounce" aria-live="polite"></div>
+  </div>
+
+<script>
+const API_BASE = window.location.origin;
+
+let currentJobId = null;
+let currentLanguage = 'en';
+let sceneIndex = [];
+let chapterData = [];
+let subSegments = [];
+let subCurrentSegIdx = -1;
+let subtitleMode = 'word';
+let uiFontSize = 100;
+let subtitleFontSize = 100;
+let subtitleRAF = null;
+let ttsAudio = null;
+let descriptionActive = false;
+let descriptionShouldResumeVideo = false;
+let descriptionFlowToken = 0;
+let descriptionRequestPending = false;
+
+const UI_FONT_STEP = 15;
+const SUBTITLE_FONT_STEP = 15;
+const FONT_MIN = 70;
+const FONT_MAX = 160;
+
+const videoPlayer = document.getElementById('videoPlayer');
+const describeBtn = document.getElementById('describeBtn');
+const descriptionText = document.getElementById('descriptionText');
+const descriptionMeta = document.getElementById('descriptionMeta');
+const summaryContent = document.getElementById('summaryContent');
+const sceneList = document.getElementById('sceneList');
+const chapterList = document.getElementById('chapterList');
+const jobSelect = document.getElementById('jobSelect');
+const langBadge = document.getElementById('langBadge');
+const srAnnounce = document.getElementById('srAnnounce');
+const subOverlay = document.getElementById('subOverlay');
+const subLine = document.getElementById('subLine');
+const processVideoForm = document.getElementById('processVideoForm');
+const processSubmitBtn = document.getElementById('processSubmitBtn');
+const processStatus = document.getElementById('processStatus');
+const videoFileInput = document.getElementById('videoFileInput');
+const uiFontSizeValue = document.getElementById('uiFontSizeValue');
+const subtitleFontSizeValue = document.getElementById('subtitleFontSizeValue');
+const subtitleModeSelect = document.getElementById('subtitleMode');
+const btnDyslexicFont = document.getElementById('btnDyslexicFont');
+const btnLineSpacing = document.getElementById('btnLineSpacing');
+const btnHighContrast = document.getElementById('btnHighContrast');
+
+function announce(text) {
+  srAnnounce.textContent = '';
+  window.setTimeout(() => {
+    srAnnounce.textContent = text;
+  }, 30);
+}
+
+function clampPercentage(value) {
+  return Math.max(FONT_MIN, Math.min(FONT_MAX, value));
+}
+
+function updateScaleLabels() {
+  uiFontSizeValue.textContent = `${uiFontSize}%`;
+  subtitleFontSizeValue.textContent = `${subtitleFontSize}%`;
+  document.body.style.setProperty('--ui-scale', (uiFontSize / 100).toString());
+  document.body.style.setProperty('--subtitle-scale', (subtitleFontSize / 100).toString());
+}
+
+function changeUiFontSize(direction) {
+  uiFontSize = direction === 0 ? 100 : clampPercentage(uiFontSize + direction * UI_FONT_STEP);
+  updateScaleLabels();
+  announce(`Interface text size ${uiFontSize} percent`);
+}
+
+function changeSubtitleFontSize(direction) {
+  subtitleFontSize = direction === 0 ? 100 : clampPercentage(subtitleFontSize + direction * SUBTITLE_FONT_STEP);
+  updateScaleLabels();
+  announce(`Subtitle size ${subtitleFontSize} percent`);
+}
+
+function setToggleState(button, active) {
+  button.classList.toggle('is-active', active);
+  button.setAttribute('aria-pressed', String(active));
+}
+
+function toggleDyslexicFont() {
+  const active = document.body.classList.toggle('font-dyslexic');
+  setToggleState(btnDyslexicFont, active);
+  announce(active ? 'Dyslexia font enabled' : 'Dyslexia font disabled');
+}
+
+function toggleLineSpacing() {
+  const active = document.body.classList.toggle('line-spacing-wide');
+  setToggleState(btnLineSpacing, active);
+  renderCurrentSubtitle(videoPlayer.currentTime);
+  announce(active ? 'Wide spacing enabled' : 'Wide spacing disabled');
+}
+
+function toggleHighContrast() {
+  const active = document.body.classList.toggle('high-contrast');
+  setToggleState(btnHighContrast, active);
+  announce(active ? 'High contrast enabled' : 'High contrast disabled');
+}
+
+function changeSubtitleMode() {
+  subtitleMode = subtitleModeSelect.value;
+  renderCurrentSubtitle(videoPlayer.currentTime);
+  const labels = {
+    off: 'Subtitles off',
+    standard: 'Standard subtitles enabled',
+    word: 'Word-by-word subtitles enabled',
+  };
+  announce(labels[subtitleMode]);
+}
+
+function setProcessStatus(text, kind = '') {
+  processStatus.textContent = text;
+  processStatus.className = `status-text${kind ? ` ${kind}` : ''}`;
+}
+
+async function handleProcessSubmit(event) {
+  event.preventDefault();
+  const formData = new FormData(processVideoForm);
+  const videoPath = String(formData.get('video_path') || '').trim();
+  const uploadedFile = videoFileInput.files && videoFileInput.files[0] ? videoFileInput.files[0] : null;
+
+  if (!uploadedFile && !videoPath) {
+    setProcessStatus('Choose a video file or enter a server path.', 'error');
+    announce('Choose a video file or enter a server path first');
+    return;
+  }
+
+  processSubmitBtn.disabled = true;
+  setProcessStatus(uploadedFile ? 'Uploading video and queueing processing…' : 'Queueing video processing…');
+
+  try {
+    const language = formData.get('language') || 'en';
+    const enableVisual = formData.get('enable_visual') === 'on';
+    const response = uploadedFile
+      ? await fetch(
+          `${API_BASE}/process-upload?language=${encodeURIComponent(language)}&enable_visual=${String(enableVisual)}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': uploadedFile.type || 'application/octet-stream',
+              'X-Upload-Filename': uploadedFile.name,
+            },
+            body: uploadedFile,
+          },
+        )
+      : await fetch(`${API_BASE}/process`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            video_path: videoPath,
+            language,
+            enable_visual: enableVisual,
+          }),
+        });
+
+    const payload = await response.json();
+    if (!response.ok) {
+      throw new Error(payload.detail || 'Processing could not be started.');
+    }
+
+    setProcessStatus(`Job ${payload.job_id} queued. Refreshing the job list…`, 'success');
+    announce(`Job ${payload.job_id} queued`);
+    await loadJobs();
+  } catch (error) {
+    setProcessStatus(error.message || 'Processing request failed.', 'error');
+    announce('Processing request failed');
+  } finally {
+    processSubmitBtn.disabled = false;
+  }
+}
+
+async function loadJobs() {
+  try {
+    const response = await fetch(`${API_BASE}/jobs`);
+    const data = await response.json();
+    jobSelect.innerHTML = '<option value="">Select a processed job</option>';
+
+    for (const job of data.jobs || []) {
+      const option = document.createElement('option');
+      option.value = job.job_id;
+      option.dataset.language = job.language || 'en';
+      const scenesLabel = job.scenes_count ? ` · ${job.scenes_count} scenes` : '';
+      const sourceName = job.video_file || job.job_id;
+      option.textContent = `${sourceName} [${(job.language || 'en').toUpperCase()}]${scenesLabel}`;
+      jobSelect.appendChild(option);
+    }
+  } catch (error) {
+    jobSelect.innerHTML = '<option value="">Jobs could not be loaded</option>';
+  }
+}
+
+async function loadJob() {
+  const jobId = jobSelect.value;
+  if (!jobId) {
+    return;
+  }
+
+  currentJobId = jobId;
+  currentLanguage = jobSelect.options[jobSelect.selectedIndex]?.dataset.language || 'en';
+  langBadge.textContent = currentLanguage.toUpperCase();
+  videoPlayer.src = `${API_BASE}/jobs/${encodeURIComponent(jobId)}/video`;
+
+  stopDescription(false);
+  clearSummaryAndListsForLoading();
+
+  await Promise.all([
+    loadSubtitleData(jobId),
+    loadScenes(jobId),
+    loadSummary(jobId),
+  ]);
+
+  descriptionMeta.textContent = '';
+  descriptionText.textContent = `Loaded job ${jobId}. Use Describe scene to hear the nearest indexed scene.`;
+  descriptionText.classList.remove('is-empty');
+  announce(`Loaded job ${jobId}`);
+}
+
+function clearSummaryAndListsForLoading() {
+  summaryContent.innerHTML = '<p class="summary-placeholder">Loading summary…</p>';
+  chapterList.innerHTML = '<li class="list-placeholder">Loading chapters…</li>';
+  sceneList.innerHTML = '<li class="list-placeholder">Loading scenes…</li>';
+}
+
+async function loadSubtitleData(jobId) {
+  subSegments = [];
+  subCurrentSegIdx = -1;
+  subLine.innerHTML = '';
+  subOverlay.classList.add('is-hidden');
+
+  try {
+    const response = await fetch(`${API_BASE}/jobs/${encodeURIComponent(jobId)}/words`);
+    if (!response.ok) {
+      return;
+    }
+    const data = await response.json();
+    subSegments = data.segments || [];
+    renderCurrentSubtitle(videoPlayer.currentTime);
+  } catch (error) {
+    console.error('Failed to load subtitle data:', error);
+  }
+}
+
+async function loadScenes(jobId) {
+  try {
+    const response = await fetch(`${API_BASE}/jobs/${encodeURIComponent(jobId)}/scenes`);
+    if (!response.ok) {
+      sceneIndex = [];
+      renderSceneList();
+      return;
+    }
+    const data = await response.json();
+    sceneIndex = data.scenes || [];
+    renderSceneList();
+  } catch (error) {
+    sceneIndex = [];
+    renderSceneList();
+  }
+}
+
+async function loadSummary(jobId) {
+  try {
+    const response = await fetch(`${API_BASE}/jobs/${encodeURIComponent(jobId)}/summary`);
+    if (!response.ok) {
+      summaryContent.innerHTML = '<p class="summary-placeholder">Summary is not available for this job.</p>';
+      chapterData = [];
+      renderChapters([]);
+      return;
+    }
+
+    const data = await response.json();
+    const points = Array.isArray(data.summary_points) ? data.summary_points.filter(Boolean) : [];
+    chapterData = Array.isArray(data.chapters) ? data.chapters : [];
+
+    if (points.length === 0) {
+      summaryContent.innerHTML = '<p class="summary-placeholder">Summary is not available for this job.</p>';
+    } else {
+      const list = document.createElement('ul');
+      for (const point of points) {
+        const item = document.createElement('li');
+        item.textContent = point;
+        list.appendChild(item);
+      }
+      summaryContent.innerHTML = '';
+      summaryContent.appendChild(list);
+    }
+
+    renderChapters(chapterData);
+  } catch (error) {
+    summaryContent.innerHTML = '<p class="summary-placeholder">Summary could not be loaded.</p>';
+    chapterData = [];
+    renderChapters([]);
+  }
+}
+
+function renderChapters(chapters) {
+  chapterList.innerHTML = '';
+  if (!chapters.length) {
+    chapterList.innerHTML = '<li class="list-placeholder">No chapters available.</li>';
+    return;
+  }
+
+  chapters.forEach((chapter, index) => {
+    const item = document.createElement('li');
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'item-card';
+    button.dataset.index = String(index);
+    button.innerHTML = `<span class="item-time">${formatTime(chapter.time || 0)}</span><span class="chapter-title">${escapeHtml(chapter.title || 'Untitled chapter')}</span>`;
+    button.addEventListener('click', () => {
+      videoPlayer.currentTime = Number(chapter.time || 0);
+      videoPlayer.play();
+      announce(`Jumped to chapter ${chapter.title || 'chapter'}`);
+    });
+    item.appendChild(button);
+    chapterList.appendChild(item);
+  });
+}
+
+function renderSceneList(activeSceneId = null) {
+  sceneList.innerHTML = '';
+  if (!sceneIndex.length) {
+    sceneList.innerHTML = '<li class="list-placeholder">No scenes available.</li>';
+    return;
+  }
+
+  sceneIndex.forEach((scene) => {
+    const item = document.createElement('li');
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'item-card';
+    if (activeSceneId === scene.scene_id) {
+      button.classList.add('is-active');
+    }
+    button.innerHTML = `<span class="item-time">${formatTime(scene.time || 0)}</span><span class="scene-desc">${escapeHtml(scene.description || '')}</span>`;
+    button.addEventListener('click', () => {
+      videoPlayer.currentTime = Number(scene.time || 0);
+      requestDescriptionForScene(scene);
+    });
+    item.appendChild(button);
+    sceneList.appendChild(item);
+  });
+}
+
+function formatTime(seconds) {
+  const safeSeconds = Number.isFinite(seconds) ? Math.max(0, seconds) : 0;
+  const minutes = Math.floor(safeSeconds / 60);
+  const remainder = Math.floor(safeSeconds % 60);
+  return `${String(minutes).padStart(2, '0')}:${String(remainder).padStart(2, '0')}`;
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach((button) => {
+    const isActive = button.id === `tabBtn${name}`;
+    button.classList.toggle('is-active', isActive);
+    button.setAttribute('aria-selected', String(isActive));
+    button.tabIndex = isActive ? 0 : -1;
+  });
+
+  document.querySelectorAll('.tab-panel').forEach((panel) => {
+    const isActive = panel.id === `tab${name}`;
+    panel.classList.toggle('is-active', isActive);
+    panel.hidden = !isActive;
+  });
+}
+
+function handleTabKeydown(event) {
+  const tabButtons = Array.from(document.querySelectorAll('.tab-btn'));
+  const currentIndex = tabButtons.indexOf(event.currentTarget);
+  if (currentIndex === -1) {
+    return;
+  }
+
+  let nextIndex = currentIndex;
+  if (event.key === 'ArrowRight') {
+    nextIndex = (currentIndex + 1) % tabButtons.length;
+  } else if (event.key === 'ArrowLeft') {
+    nextIndex = (currentIndex - 1 + tabButtons.length) % tabButtons.length;
+  } else if (event.key === 'Home') {
+    nextIndex = 0;
+  } else if (event.key === 'End') {
+    nextIndex = tabButtons.length - 1;
+  } else {
+    return;
+  }
+
+  event.preventDefault();
+  const nextButton = tabButtons[nextIndex];
+  const nextName = nextButton.id.replace('tabBtn', '');
+  switchTab(nextName);
+  nextButton.focus();
+}
+
+function getActiveSegment(currentTime) {
+  for (const segment of subSegments) {
+    if (currentTime >= segment.start - 0.05 && currentTime <= segment.end + 0.1) {
+      return segment;
+    }
+  }
+  return null;
+}
+
+function renderCurrentSubtitle(currentTime) {
+  if (subtitleMode === 'off' || subSegments.length === 0) {
+    subLine.innerHTML = '';
+    subOverlay.classList.add('is-hidden');
+    return;
+  }
+
+  const segment = getActiveSegment(currentTime);
+  if (!segment || !Array.isArray(segment.words) || segment.words.length === 0) {
+    subLine.innerHTML = '';
+    subOverlay.classList.add('is-hidden');
+    return;
+  }
+
+  subOverlay.classList.remove('is-hidden');
+
+  if (segment !== subCurrentSegIdx) {
+    subCurrentSegIdx = segment;
+    subLine.innerHTML = '';
+    segment.words.forEach((wordPart) => {
+      const span = document.createElement('span');
+      span.className = 'subtitle-word';
+      span.textContent = `${wordPart.word} `;
+      subLine.appendChild(span);
+    });
+  }
+
+  const wordElements = subLine.querySelectorAll('.subtitle-word');
+
+  if (subtitleMode === 'standard') {
+    wordElements.forEach((element) => {
+      element.className = 'subtitle-word uniform';
+    });
+    return;
+  }
+
+  let currentWordIndex = -1;
+  segment.words.forEach((wordPart, index) => {
+    if (currentTime >= wordPart.start && currentTime < wordPart.end) {
+      currentWordIndex = index;
+    }
+  });
+
+  if (currentWordIndex === -1) {
+    for (let index = segment.words.length - 1; index >= 0; index -= 1) {
+      if (currentTime >= segment.words[index].end) {
+        currentWordIndex = index;
+        break;
+      }
+    }
+  }
+
+  wordElements.forEach((element, index) => {
+    element.className = 'subtitle-word';
+    if (index === currentWordIndex) {
+      element.classList.add('current');
+    } else if (index === currentWordIndex - 1) {
+      element.classList.add('previous');
+    } else if (currentWordIndex !== -1 && index < currentWordIndex) {
+      element.classList.add('spoken');
+    }
+  });
+}
+
+function subtitleLoop() {
+  if (!videoPlayer.paused && !videoPlayer.ended) {
+    renderCurrentSubtitle(videoPlayer.currentTime);
+  }
+  subtitleRAF = window.requestAnimationFrame(subtitleLoop);
+}
+
+function startSubtitleLoop() {
+  if (subtitleRAF === null) {
+    subtitleRAF = window.requestAnimationFrame(subtitleLoop);
+  }
+}
+
+function stopSubtitleLoop() {
+  if (subtitleRAF !== null) {
+    window.cancelAnimationFrame(subtitleRAF);
+    subtitleRAF = null;
+  }
+}
+
+function changeSpeed() {
+  const speed = Number.parseFloat(document.getElementById('speedSelect').value || '1');
+  videoPlayer.playbackRate = speed;
+  if (ttsAudio) {
+    ttsAudio.playbackRate = speed;
+  }
+  announce(`Playback speed ${speed}x`);
+}
+
+function clearDescriptionAudio(resetCurrentTime = true) {
+  if (!ttsAudio) {
+    return;
+  }
+  ttsAudio.pause();
+  if (resetCurrentTime) {
+    ttsAudio.currentTime = 0;
+  }
+  ttsAudio.onended = null;
+  ttsAudio.onerror = null;
+  ttsAudio = null;
+}
+
+function stopDescription(announceStop = true) {
+  descriptionFlowToken += 1;
+  descriptionRequestPending = false;
+  descriptionShouldResumeVideo = false;
+  descriptionActive = false;
+  clearDescriptionAudio(true);
+  describeBtn.disabled = false;
+  describeBtn.textContent = 'Describe scene';
+  if (announceStop) {
+    announce('Description stopped');
+  }
+}
+
+function markActiveScene(sceneId) {
+  renderSceneList(sceneId);
+}
+
+function startDescriptionPlayback(audioUrl, shouldResumeVideo) {
+  clearDescriptionAudio(true);
+  descriptionShouldResumeVideo = shouldResumeVideo;
+  descriptionActive = true;
+
+  ttsAudio = new Audio(`${API_BASE}${audioUrl}`);
+  ttsAudio.playbackRate = videoPlayer.playbackRate;
+  ttsAudio.onended = () => {
+    const resumeVideo = descriptionActive && descriptionShouldResumeVideo;
+    descriptionActive = false;
+    descriptionShouldResumeVideo = false;
+    clearDescriptionAudio(false);
+    if (resumeVideo) {
+      videoPlayer.play();
+    }
+  };
+  ttsAudio.onerror = () => {
+    descriptionText.textContent = `${descriptionText.textContent} Audio playback failed.`;
+    descriptionActive = false;
+    descriptionShouldResumeVideo = false;
+    clearDescriptionAudio(false);
+  };
+
+  const playPromise = ttsAudio.play();
+  if (playPromise) {
+    playPromise.catch(() => {
+      descriptionText.textContent = `${descriptionText.textContent} Audio playback was blocked.`;
+      descriptionActive = false;
+      descriptionShouldResumeVideo = false;
+      clearDescriptionAudio(false);
+      if (shouldResumeVideo) {
+        videoPlayer.play();
+      }
+    });
+  }
+}
+
+async function fetchDescriptionForTime(timeValue) {
+  if (!currentJobId) {
+    descriptionText.textContent = 'Load a processed job first.';
+    descriptionText.classList.add('is-empty');
+    announce('Load a processed job first');
+    return;
+  }
+
+  const requestToken = ++descriptionFlowToken;
+  descriptionRequestPending = true;
+  const shouldResumeVideo = !videoPlayer.paused;
+  stopDescription(false);
+  descriptionFlowToken = requestToken;
+  descriptionRequestPending = true;
+  videoPlayer.pause();
+  describeBtn.disabled = true;
+  describeBtn.textContent = 'Loading description…';
+  descriptionText.textContent = 'Generating a scene description…';
+  descriptionText.classList.remove('is-empty');
+
+  try {
+    const response = await fetch(`${API_BASE}/jobs/${encodeURIComponent(currentJobId)}/describe`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ time: timeValue, language: currentLanguage }),
+    });
+
+    const payload = await response.json();
+    if (requestToken !== descriptionFlowToken) {
+      return;
+    }
+    descriptionRequestPending = false;
+    if (!response.ok) {
+      throw new Error(payload.detail || 'Description is not available.');
+    }
+
+    descriptionText.textContent = payload.description;
+    descriptionMeta.textContent = `Scene ${payload.scene_id} · ${formatTime(payload.time)}${payload.tts_duration_sec ? ` · ${payload.tts_duration_sec.toFixed(1)}s audio` : ''}`;
+    markActiveScene(payload.scene_id);
+
+    if (payload.tts_audio_url) {
+      startDescriptionPlayback(payload.tts_audio_url, shouldResumeVideo);
+    } else if (shouldResumeVideo) {
+      videoPlayer.play();
+    }
+
+    announce(`Description ready for scene ${payload.scene_id}`);
+  } catch (error) {
+    if (requestToken !== descriptionFlowToken) {
+      return;
+    }
+    descriptionRequestPending = false;
+    descriptionText.textContent = error.message || 'Description request failed.';
+    descriptionMeta.textContent = '';
+    descriptionText.classList.remove('is-empty');
+    if (shouldResumeVideo) {
+      videoPlayer.play();
+    }
+    announce('Description request failed');
+  } finally {
+    describeBtn.disabled = false;
+    describeBtn.textContent = 'Describe scene';
+  }
+}
+
+function requestDescription() {
+  fetchDescriptionForTime(videoPlayer.currentTime);
+}
+
+function requestDescriptionForScene(scene) {
+  fetchDescriptionForTime(Number(scene.time || 0));
+}
+
+function highlightActiveChapter(currentTime) {
+  const buttons = chapterList.querySelectorAll('.item-card');
+  let activeIndex = -1;
+  chapterData.forEach((chapter, index) => {
+    if (Number(chapter.time || 0) <= currentTime) {
+      activeIndex = index;
+    }
+  });
+
+  buttons.forEach((button, index) => {
+    button.classList.toggle('is-active', index === activeIndex);
+  });
+}
+
+videoPlayer.addEventListener('play', () => {
+  if (descriptionRequestPending || descriptionActive) {
+    stopDescription(false);
+    descriptionText.textContent = 'Description stopped because video playback resumed.';
+    descriptionText.classList.remove('is-empty');
+    descriptionMeta.textContent = 'Description stopped because video playback resumed.';
+    announce('Description stopped because video playback resumed');
+  }
+  startSubtitleLoop();
+});
+
+videoPlayer.addEventListener('pause', stopSubtitleLoop);
+videoPlayer.addEventListener('ended', stopSubtitleLoop);
+videoPlayer.addEventListener('seeked', () => renderCurrentSubtitle(videoPlayer.currentTime));
+videoPlayer.addEventListener('timeupdate', () => {
+  highlightActiveChapter(videoPlayer.currentTime);
+});
+
+document.addEventListener('keydown', (event) => {
+  const tagName = event.target && event.target.tagName ? event.target.tagName : '';
+  if (tagName === 'INPUT' || tagName === 'SELECT' || tagName === 'TEXTAREA') {
+    return;
+  }
+
+  if (event.key === 'd' || event.key === 'D') {
+    event.preventDefault();
+    requestDescription();
+  }
+
+  if (event.key === 's' || event.key === 'S') {
+    event.preventDefault();
+    stopDescription(true);
+  }
+});
+
+function escapeHtml(value) {
+  const div = document.createElement('div');
+  div.textContent = String(value || '');
+  return div.innerHTML;
+}
+
+processVideoForm.addEventListener('submit', handleProcessSubmit);
+jobSelect.addEventListener('change', loadJob);
+document.querySelectorAll('.tab-btn').forEach((button) => {
+  button.addEventListener('keydown', handleTabKeydown);
+});
+
+updateScaleLabels();
+changeSpeed();
+switchTab('Summary');
+loadJobs();
+</script>
+</body>
+</html>

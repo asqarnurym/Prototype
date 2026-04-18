@@ -1,0 +1,2 @@
+id,path,language,duration_bucket,duration_sec,content_type,resolution,fps,audio_condition,source_license
+en_short_talking_head,./input/en_short_talking_head.mp4,en,short,208.306009,talking_head,1280x720,30,clean,mixed
