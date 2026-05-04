@@ -226,5 +226,7 @@ def _build_description_generation_config() -> dict:
     return {
         "temperature": 0.2,
         "top_p": 0.8,
-        "max_output_tokens": 240,
+        # Multimodal descriptions need extra headroom to avoid truncation after
+        # OCR-like text quoting and brief reasoning over the frame layout.
+        "max_output_tokens": 512,
     }

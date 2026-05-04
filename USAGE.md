@@ -312,6 +312,29 @@ A typical session looks like this:
 
 ---
 
+## Manuscript workflow (conference submission)
+
+When preparing the paper in `academic_paper/`, use this sequence:
+
+```powershell
+# Static manuscript leakage scan
+.\.venv\Scripts\python.exe scripts\paper_sanity_check.py --paper-dir academic_paper
+
+# Full build guard (pdf + bibliography + page limit + undefined refs)
+powershell -ExecutionPolicy Bypass -File scripts\build_paper.ps1
+
+# Combined preflight
+powershell -ExecutionPolicy Bypass -File scripts\pre_submission_check.ps1
+```
+
+`paper_sanity_check.py` can emit a machine-readable report:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\paper_sanity_check.py --paper-dir academic_paper --report-json temp\paper_sanity_report.json
+```
+
+---
+
 ## Building a paper evaluation corpus
 
 For conference-grade evaluation, keep the corpus manifest and run outputs in
@@ -357,3 +380,29 @@ For conference-grade evaluation, keep the corpus manifest and run outputs in
    ```
 
 This produces versioned results under `evaluation/run_XXX/`.
+
+### Paper extension diagnostics
+
+After selecting the paper evidence run in `evaluation/paper_charts_run.txt`, you
+can regenerate the post-hoc scene-selection diagnostics without new hosted API
+calls:
+
+```bash
+python scripts/analyze_scene_selection_ablation.py
+python scripts/extract_scene_case_notes.py
+```
+
+The scripts write CSV/JSON/Markdown artifacts to `evaluation/paper_extensions/`.
+They are intended for paper methodology work:
+
+- `scene_selection_ablation_*.csv` — coverage-cost ablation for static scene caps
+  and uniform time-grid references.
+- `qualitative_scene_cases.*` — metric-selected failure/reference cases from
+  saved B1 artifacts.
+
+Build manuscript variants with:
+
+```powershell
+# Current full manuscript version
+powershell -ExecutionPolicy Bypass -File scripts\build_paper.ps1 -TexEntry academic_paper/main_full.tex -MaxPages 8
+```

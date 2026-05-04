@@ -1,0 +1,19 @@
+strategy,strategy_description,n_videos,mean_scene_count,median_scene_count,mean_coverage_15s_pct,median_coverage_15s_pct,mean_scene_reduction_vs_adaptive_pct,duration_bucket
+adaptive_actual,Saved adaptive scene index used by the manuscript evidence run.,8,14.12,13.00,96.48,99.20,0.00,short
+static_cap_10,Post-hoc cap: evenly subsample at most 10 scenes from adaptive index.,8,9.38,10.00,95.28,96.85,24.69,short
+static_cap_20,Post-hoc cap: evenly subsample at most 20 scenes from adaptive index.,8,13.50,13.00,96.48,99.20,2.77,short
+static_cap_30,Post-hoc cap: evenly subsample at most 30 scenes from adaptive index.,8,14.12,13.00,96.48,99.20,0.00,short
+uniform_60s,Synthetic time-grid baseline with one anchor every 60 seconds.,8,3.12,3.00,50.81,52.34,75.31,short
+uniform_30s,Synthetic time-grid baseline with one anchor every 30 seconds.,8,5.62,6.00,97.63,99.44,56.11,short
+adaptive_actual,Saved adaptive scene index used by the manuscript evidence run.,8,26.88,22.00,88.01,97.73,0.00,medium
+static_cap_10,Post-hoc cap: evenly subsample at most 10 scenes from adaptive index.,8,9.75,10.00,66.47,62.41,46.20,medium
+static_cap_20,Post-hoc cap: evenly subsample at most 20 scenes from adaptive index.,8,16.38,20.00,84.94,88.34,23.47,medium
+static_cap_30,Post-hoc cap: evenly subsample at most 30 scenes from adaptive index.,8,20.62,22.00,87.10,94.21,13.12,medium
+uniform_60s,Synthetic time-grid baseline with one anchor every 60 seconds.,8,6.88,6.00,51.05,51.58,63.98,medium
+uniform_30s,Synthetic time-grid baseline with one anchor every 30 seconds.,8,13.25,12.00,98.97,99.47,31.51,medium
+adaptive_actual,Saved adaptive scene index used by the manuscript evidence run.,8,74.75,74.50,90.59,97.62,0.00,long
+static_cap_10,Post-hoc cap: evenly subsample at most 10 scenes from adaptive index.,8,10.00,10.00,29.63,29.50,83.35,long
+static_cap_20,Post-hoc cap: evenly subsample at most 20 scenes from adaptive index.,8,20.00,20.00,59.34,59.06,66.70,long
+static_cap_30,Post-hoc cap: evenly subsample at most 30 scenes from adaptive index.,8,30.00,30.00,77.96,78.11,50.06,long
+uniform_60s,Synthetic time-grid baseline with one anchor every 60 seconds.,8,15.88,16.00,51.36,51.61,74.92,long
+uniform_30s,Synthetic time-grid baseline with one anchor every 30 seconds.,8,31.38,31.50,99.61,99.93,50.43,long

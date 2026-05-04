@@ -26,7 +26,7 @@ def test_generate_summary_uses_description_config_fields(monkeypatch):
     monkeypatch.setattr(summary, "_client", None)
     monkeypatch.setattr(summary.settings, "google_cloud_project", "prototype-487106")
     monkeypatch.setattr(summary.settings, "google_cloud_location", "global")
-    monkeypatch.setattr(summary.settings, "description_model", "gemini-3-flash-preview")
+    monkeypatch.setattr(summary.settings, "description_model", "gemini-2.5-flash")
     monkeypatch.setattr(summary, "_get_gemini_client", lambda: FakeClient())
 
     result = summary.generate_summary(scenes=scenes, job_id="job-1", language="en")
@@ -34,7 +34,7 @@ def test_generate_summary_uses_description_config_fields(monkeypatch):
     assert "Lesson overview" in result["summary_points"]
     assert len(result["summary_points"]) >= 3
     assert result["chapters"] == [{"time": 0.0, "title": "Intro"}]
-    assert calls["model"] == "gemini-3-flash-preview"
+    assert calls["model"] == "gemini-2.5-flash"
     assert "Title slide introduces the lesson." in calls["contents"][0]
     assert "5-8 bullet points" in calls["contents"][0]
 

@@ -126,7 +126,7 @@ The Gemini integration uses the official `google-genai` SDK with Vertex AI (`ver
 
 `global` is the safest default for Gemini on Vertex AI here because it works for this project, reduces regional availability issues, and Google recommends it when you don't need strict in-region ML processing.
 
-The default Gemini model in this project is `gemini-3-flash-preview`, which is currently accessible for this Vertex AI project in `global`.
+The default Gemini model in this project is `gemini-2.5-flash`, which is a stable Vertex AI model with text and image input support for the summary and scene-description flows used here. It is configured in `global`, which is currently accessible for this project and avoids unnecessary regional availability issues.
 
 > Without Vertex AI project configuration, descriptions and summaries use fallback content. Without Google credentials, TTS uses free `edge-tts` (Microsoft).
 
@@ -231,6 +231,46 @@ Technical evaluation results are saved to `evaluation/` with automatic run versi
 
 Each report includes RTF (Real-Time Factor), ASR Confidence, and visual-scene coverage metrics (Coverage 15s).
 
+Paper extension diagnostics are generated from the pinned paper run without new API calls:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\analyze_scene_selection_ablation.py
+.\.venv\Scripts\python.exe scripts\extract_scene_case_notes.py
+```
+
+Outputs are written to `evaluation/paper_extensions/` and support the optional
+full manuscript variant in `academic_paper/main_full.tex`.
+
+---
+
+## Paper pre-submission automation
+
+For conference submission checks, use these scripts from the repo root:
+
+```powershell
+# 1) Source-level manuscript sanity scan
+.\.venv\Scripts\python.exe scripts\paper_sanity_check.py --paper-dir academic_paper
+
+# 2) Build + bib + page-limit + undefined-citation guard
+powershell -ExecutionPolicy Bypass -File scripts\build_paper.ps1
+
+# 3) Full preflight (sanity + build)
+powershell -ExecutionPolicy Bypass -File scripts\pre_submission_check.ps1
+```
+
+What `paper_sanity_check.py` flags by default:
+
+- local absolute paths (`C:\...`, `/Users/...`, `file://...`)
+- localhost URLs
+- internal run/job markers (`run_001`, `job_id`, `/jobs/{job_id}`)
+- repo/internal artifact paths (`evaluation/...`, `output/...`, etc.)
+- draft markers (`TODO`, `TBD`, `FIXME`, `WIP`)
+- placeholder citation markers (`[ref]`, `[citation needed]`)
+- log-style leak patterns (`fallback [reason=...]`, credential/env tokens)
+- preview-model tags (for example `gemini-*-preview`)
+
+If a line is intentionally exempt, append `% sanity-ignore` to that line in the `.tex` source.
+
 ---
 
 ## Project structure
@@ -270,7 +310,7 @@ Prototype/
 ├── static/
 │   └── index.html               # Web UI (video player + accessibility)
 ├── evaluation/                  # Corpus manifest and evaluation results
-├── scripts/                     # Bootstrap, environment verification, corpus prep
+├── scripts/                     # Bootstrap, environment verification, corpus prep, paper preflight
 │
 ├── input/                       # Input videos
 ├── output/                      # Output artifacts

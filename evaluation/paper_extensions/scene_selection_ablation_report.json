@@ -1,0 +1,23 @@
+{
+  "source_run": "run_001",
+  "coverage_window_sec": 15,
+  "strategies": {
+    "adaptive_actual": "Saved adaptive scene index used by the manuscript evidence run.",
+    "static_cap_10": "Post-hoc cap: evenly subsample at most 10 scenes from adaptive index.",
+    "static_cap_20": "Post-hoc cap: evenly subsample at most 20 scenes from adaptive index.",
+    "static_cap_30": "Post-hoc cap: evenly subsample at most 30 scenes from adaptive index.",
+    "uniform_60s": "Synthetic time-grid baseline with one anchor every 60 seconds.",
+    "uniform_30s": "Synthetic time-grid baseline with one anchor every 30 seconds."
+  },
+  "interpretation_notes": [
+    "Static caps are post-hoc subsamples of the saved adaptive scene index; they do not re-run scene detection.",
+    "Uniform baselines are synthetic time grids used as coverage-only references, not semantic scene detectors.",
+    "Uniform 30s naturally saturates a within-15s coverage metric and should be read as an upper coverage reference rather than a semantic-quality baseline."
+  ],
+  "outputs": {
+    "per_video": "C:\\Users\\asqar\\Desktop\\Projects\\Python\\Prototype\\evaluation\\paper_extensions\\scene_selection_ablation_per_video.csv",
+    "overall": "C:\\Users\\asqar\\Desktop\\Projects\\Python\\Prototype\\evaluation\\paper_extensions\\scene_selection_ablation_summary.csv",
+    "by_content": "C:\\Users\\asqar\\Desktop\\Projects\\Python\\Prototype\\evaluation\\paper_extensions\\scene_selection_ablation_by_content_type.csv",
+    "by_duration": "C:\\Users\\asqar\\Desktop\\Projects\\Python\\Prototype\\evaluation\\paper_extensions\\scene_selection_ablation_by_duration.csv"
+  }
+}

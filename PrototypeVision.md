@@ -169,6 +169,11 @@ The filesystem or object storage should hold blobs and generated artifacts, but 
 - evaluation runs
 - audit records
 
+For paper-oriented evaluation, saved artifacts should remain reusable for
+post-hoc diagnostics that do not call hosted models again. The current example
+is `evaluation/paper_extensions/`, which stores scene-selection ablations and
+qualitative case notes derived from the pinned manuscript run.
+
 For near-term implementation, SQLite plus SQLAlchemy is a perfectly good starting point for upload persistence. Later, PostgreSQL can replace SQLite without changing the conceptual model.
 
 ## Innovative Extensions
@@ -239,6 +244,21 @@ Strong observability should include:
 - clear fallback classification
 - latency breakdowns for on-demand operations
 - visual regression testing for the frontend
+
+## Publication Quality Gate
+
+Because this project is used in academic deliverables, publication-readiness
+checks should be treated as a first-class workflow, not an ad-hoc manual step.
+
+The near-term baseline is:
+
+- manuscript sanity scan for local/internal leakage;
+- deterministic PDF build with bibliography and page-limit checks;
+- a single preflight command before submission.
+
+Operational details and commands belong in `README.md`, `USAGE.md`, and
+`TESTING.md`; this vision document only captures the architectural principle:
+academic output quality gates are part of the platform's reliability model.
 
 ## Recommended Technical Stack
 

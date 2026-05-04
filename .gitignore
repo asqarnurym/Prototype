@@ -59,8 +59,14 @@ uvicorn-qa.log
 # Build
 dist/
 build/
+backups/
 academic_paper/Paper-output/
+academic_paper/Edit.txt
+academic_paper/*backup*.md
 academic_paper/*.pdf
+academic_paper/*.bbl
+academic_paper/*.blg
+academic_paper/*.log
 selected_articles_conference/*.pdf
 template/*.pdf
 *.synctex.gz

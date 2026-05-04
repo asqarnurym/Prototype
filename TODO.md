@@ -2,7 +2,7 @@
 
 ## Completed on 2026-04-18
 
-- IEEE style cleanup applied to `academic_paper/paper_ieee.tex`:
+- IEEE style cleanup applied to the manuscript source:
   - removed `\IEEEPARstart`
   - removed `\IEEEoverridecommandlockouts`
   - removed the extra `\\` from `\title`
@@ -12,66 +12,77 @@
 - Current metric charts were confirmed fresh:
   - `figures/fig_rtf_comparison.png`
   - `figures/fig_coverage.png`
-- Explicit repo-path leakage was re-scanned in `academic_paper/paper_ieee.tex` and no reader-visible internal project paths were found
+- Explicit repo-path leakage was re-scanned in the manuscript source and no reader-visible internal project paths were found
 - `academic_paper/Paper-output` was identified as an old LaTeX/Overleaf-style compile-output folder, not the source of truth for the article
+
+## Completed on 2026-04-30
+
+- Manuscript pre-submission toolchain added:
+  - `scripts/paper_sanity_check.py`
+  - `scripts/build_paper.ps1`
+  - `scripts/pre_submission_check.ps1`
+- Pre-submission tooling documented in:
+  - `README.md`
+  - `USAGE.md`
+  - `TESTING.md`
+  - `Prototype.md`
+  - `PrototypeVision.md`
+- Current paper build was validated from canonical sources:
+  - `academic_paper/main_full.tex`
+  - `academic_paper/paper_ieee_full.tex`
+  - output confirms 6 pages
+- Python environment reproducibility restored:
+  - `.venv` works
+  - `scripts/verify_environment.py --profile runtime` passes
+- Lint issue fixed:
+  - `tests/unit/test_generate_charts_script.py`
+  - `ruff check .` is green
+- Backups created:
+  - article snapshot zip in `backups/`
+  - repo bundle backup in `backups/`
+- Git hygiene improved for publication workflow:
+  - `backups/` ignored
+  - local LaTeX build artifacts in `academic_paper/` ignored
+- Runtime model baseline confirmed:
+  - `description_model = gemini-2.5-flash`
+  - no active `gemini-*-preview` override in `.env`
+- Paper methodology extension added:
+  - `scripts/analyze_scene_selection_ablation.py`
+  - `scripts/extract_scene_case_notes.py`
+  - generated artifacts in `evaluation/paper_extensions/`
+  - generated data in `evaluation/paper_extensions/`
+- Manuscript variants were consolidated:
+  - current source: `academic_paper/main_full.tex`
+  - earlier short version removed after the full version fit the 6-page layout
+- On-demand TTS is included only as a separate exploratory interaction-level
+  micro-benchmark, not as part of B0/B1 corpus throughput.
 
 ## Active — Critical
 
-1. Compile the current paper PDF from:
-   - `academic_paper/main.tex`
-   - canonical article body: `academic_paper/paper_ieee.tex`
-   Goal: verify the current manuscript builds, not the stale `academic_paper/Paper-output` build.
-
-2. Validate the 6-page limit after the latest edits:
-   - tables/figures still fit
-   - references did not shift badly
-   - no harmful underfull/overfull layout issues
-
-3. Verify bibliography/citations:
-   - every `\cite{...}` resolves
-   - no retained claim lacks support from either:
-     - local verified metrics, or
-     - literature
-
-4. Perform a manual anti-AI / human rewrite pass:
+1. Perform a manual anti-AI / human rewrite pass:
    - abstract
    - introduction
    - contributions
    - discussion
    - conclusion
 
+2. Final bibliography/content claim audit:
+   - ensure every retained claim is supported by:
+     - local verified metrics, or
+     - cited literature
+   - keep wording publication-facing (no internal engineering jargon in reader-facing text)
+
 ## Active — Important / Desirable
 
-5. Decide what to do with `academic_paper/Paper-output`:
-   - delete it, or
-   - rename/archive it as an old compile artifact (for example `Paper-output-old-overleaf-build`)
-
-6. Repair the Python environment for reproducibility:
-   - current `.venv` is broken and points to a missing Python path
-
-7. Fix the remaining lint issue:
-   - `tests/unit/test_generate_charts_script.py`
-   - current `ruff check .` is not green
-
-8. Create a separate manual backup of the near-final article:
-    - for example a zip or a copy of `academic_paper/`
-    - keep this even though git exists
-
-9. Replace ad-hoc upload persistence with a real database-backed implementation:
+3. Replace ad-hoc upload persistence with a real database-backed implementation:
     - start with SQLite + SQLAlchemy
     - persist upload jobs, file metadata, statuses, and artifact references
     - keep the current filesystem layout only as blob/artifact storage, not the source of truth
 
-10. Decide whether to add an audio-description latency subsection for the paper:
-    - compare on-demand audio-description latency against a pre-generated TTS baseline and against no-TTS preprocessing
-    - only keep it if it materially strengthens the paper without breaking the page budget
-    - separate server-side generation latency from end-to-end client-observed latency
-    - if client-side latency cannot be measured robustly, report a conservative worst-case observed value with explicit methodology
-
-11. Benchmark Gemini model variants on Vertex AI:
-    - compare `gemini-3-flash-preview` vs `gemini-2.5-flash` on cost, runtime, and output quality
-    - capture regression thresholds for summary/scene-description latency and artifact usefulness
-    - revert the default model to `gemini-2.5-flash` if the newer model is slower, materially more expensive, or degrades output quality
+4. Benchmark Gemini model variants on Vertex AI:
+    - keep `gemini-2.5-flash` as the baseline default for summary and scene-description generation
+    - compare future preview or newer Gemini models against `gemini-2.5-flash` on cost, runtime, and output quality
+    - capture regression thresholds for summary/scene-description latency and artifact usefulness before changing the default again
 
 ## Candidate Ideas — Needs Triage
 
@@ -103,13 +114,12 @@
 
 ## Recommended Execution Order
 
-1. Build the current PDF
-2. Check 6 pages + citation resolution
-3. Do the manual human-voice rewrite pass
-4. Decide the fate of `Paper-output`
-5. Then fix environment/lint issues
+1. Do the manual human-voice rewrite pass
+2. Run `scripts/pre_submission_check.ps1`
+3. Perform final bibliography/content claim audit
+4. Then continue non-paper backlog items (DB persistence, model benchmarks)
 
 ## Key Files
 
-- Current article: `academic_paper/paper_ieee.tex`
-- Entrypoint: `academic_paper/main.tex`
+- Current article: `academic_paper/paper_ieee_full.tex`
+- Entrypoint: `academic_paper/main_full.tex`

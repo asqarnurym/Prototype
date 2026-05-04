@@ -1,0 +1,145 @@
+vid_id,language,duration_bucket,content_type,strategy,strategy_description,video_duration_sec,scene_count,adaptive_scene_count,scene_reduction_vs_adaptive_pct,coverage_15s_pct
+en_short_talking_head,en,short,talking_head,adaptive_actual,Saved adaptive scene index used by the manuscript evidence run.,197.34,22,22,0.00,99.83
+en_short_talking_head,en,short,talking_head,static_cap_10,Post-hoc cap: evenly subsample at most 10 scenes from adaptive index.,197.34,10,22,54.55,95.77
+en_short_talking_head,en,short,talking_head,static_cap_20,Post-hoc cap: evenly subsample at most 20 scenes from adaptive index.,197.34,20,22,9.09,99.83
+en_short_talking_head,en,short,talking_head,static_cap_30,Post-hoc cap: evenly subsample at most 30 scenes from adaptive index.,197.34,22,22,0.00,99.83
+en_short_talking_head,en,short,talking_head,uniform_60s,Synthetic time-grid baseline with one anchor every 60 seconds.,197.34,4,22,81.82,55.23
+en_short_talking_head,en,short,talking_head,uniform_30s,Synthetic time-grid baseline with one anchor every 30 seconds.,197.34,7,22,68.18,99.32
+en_short_slide-centric,en,short,slide-centric,adaptive_actual,Saved adaptive scene index used by the manuscript evidence run.,159.25,9,9,0.00,81.00
+en_short_slide-centric,en,short,slide-centric,static_cap_10,Post-hoc cap: evenly subsample at most 10 scenes from adaptive index.,159.25,9,9,0.00,81.00
+en_short_slide-centric,en,short,slide-centric,static_cap_20,Post-hoc cap: evenly subsample at most 20 scenes from adaptive index.,159.25,9,9,0.00,81.00
+en_short_slide-centric,en,short,slide-centric,static_cap_30,Post-hoc cap: evenly subsample at most 30 scenes from adaptive index.,159.25,9,9,0.00,81.00
+en_short_slide-centric,en,short,slide-centric,uniform_60s,Synthetic time-grid baseline with one anchor every 60 seconds.,159.25,3,9,66.67,48.98
+en_short_slide-centric,en,short,slide-centric,uniform_30s,Synthetic time-grid baseline with one anchor every 30 seconds.,159.25,6,9,33.33,99.84
+en_short_screencast,en,short,screencast,adaptive_actual,Saved adaptive scene index used by the manuscript evidence run.,185.72,12,12,0.00,94.77
+en_short_screencast,en,short,screencast,static_cap_10,Post-hoc cap: evenly subsample at most 10 scenes from adaptive index.,185.72,10,12,16.67,93.15
+en_short_screencast,en,short,screencast,static_cap_20,Post-hoc cap: evenly subsample at most 20 scenes from adaptive index.,185.72,12,12,0.00,94.77
+en_short_screencast,en,short,screencast,static_cap_30,Post-hoc cap: evenly subsample at most 30 scenes from adaptive index.,185.72,12,12,0.00,94.77
+en_short_screencast,en,short,screencast,uniform_60s,Synthetic time-grid baseline with one anchor every 60 seconds.,185.72,4,12,66.67,52.77
+en_short_screencast,en,short,screencast,uniform_30s,Synthetic time-grid baseline with one anchor every 30 seconds.,185.72,7,12,41.67,99.61
+en_short_practical_demo,en,short,practical_demo,adaptive_actual,Saved adaptive scene index used by the manuscript evidence run.,117.00,14,14,0.00,100.00
+en_short_practical_demo,en,short,practical_demo,static_cap_10,Post-hoc cap: evenly subsample at most 10 scenes from adaptive index.,117.00,10,14,28.57,100.00
+en_short_practical_demo,en,short,practical_demo,static_cap_20,Post-hoc cap: evenly subsample at most 20 scenes from adaptive index.,117.00,14,14,0.00,100.00
+en_short_practical_demo,en,short,practical_demo,static_cap_30,Post-hoc cap: evenly subsample at most 30 scenes from adaptive index.,117.00,14,14,0.00,100.00
+en_short_practical_demo,en,short,practical_demo,uniform_60s,Synthetic time-grid baseline with one anchor every 60 seconds.,117.00,2,14,85.71,40.17
+en_short_practical_demo,en,short,practical_demo,uniform_30s,Synthetic time-grid baseline with one anchor every 30 seconds.,117.00,4,14,71.43,90.60
+en_medium_talking_head,en,medium,talking_head,adaptive_actual,Saved adaptive scene index used by the manuscript evidence run.,303.02,11,11,0.00,99.99
+en_medium_talking_head,en,medium,talking_head,static_cap_10,Post-hoc cap: evenly subsample at most 10 scenes from adaptive index.,303.02,10,11,9.09,90.42
+en_medium_talking_head,en,medium,talking_head,static_cap_20,Post-hoc cap: evenly subsample at most 20 scenes from adaptive index.,303.02,11,11,0.00,99.99
+en_medium_talking_head,en,medium,talking_head,static_cap_30,Post-hoc cap: evenly subsample at most 30 scenes from adaptive index.,303.02,11,11,0.00,99.99
+en_medium_talking_head,en,medium,talking_head,uniform_60s,Synthetic time-grid baseline with one anchor every 60 seconds.,303.02,6,11,45.45,52.14
+en_medium_talking_head,en,medium,talking_head,uniform_30s,Synthetic time-grid baseline with one anchor every 30 seconds.,303.02,11,11,0.00,99.99
+en_medium_slide-centric,en,medium,slide-centric,adaptive_actual,Saved adaptive scene index used by the manuscript evidence run.,477.86,40,40,0.00,97.31
+en_medium_slide-centric,en,medium,slide-centric,static_cap_10,Post-hoc cap: evenly subsample at most 10 scenes from adaptive index.,477.86,10,40,75.00,59.85
+en_medium_slide-centric,en,medium,slide-centric,static_cap_20,Post-hoc cap: evenly subsample at most 20 scenes from adaptive index.,477.86,20,40,50.00,87.89
+en_medium_slide-centric,en,medium,slide-centric,static_cap_30,Post-hoc cap: evenly subsample at most 30 scenes from adaptive index.,477.86,30,40,25.00,93.54
+en_medium_slide-centric,en,medium,slide-centric,uniform_60s,Synthetic time-grid baseline with one anchor every 60 seconds.,477.86,8,40,80.00,48.76
+en_medium_slide-centric,en,medium,slide-centric,uniform_30s,Synthetic time-grid baseline with one anchor every 30 seconds.,477.86,16,40,60.00,97.52
+en_medium_screencast,en,medium,screencast,adaptive_actual,Saved adaptive scene index used by the manuscript evidence run.,349.19,12,12,0.00,99.09
+en_medium_screencast,en,medium,screencast,static_cap_10,Post-hoc cap: evenly subsample at most 10 scenes from adaptive index.,349.19,10,12,16.67,82.48
+en_medium_screencast,en,medium,screencast,static_cap_20,Post-hoc cap: evenly subsample at most 20 scenes from adaptive index.,349.19,12,12,0.00,99.09
+en_medium_screencast,en,medium,screencast,static_cap_30,Post-hoc cap: evenly subsample at most 30 scenes from adaptive index.,349.19,12,12,0.00,99.09
+en_medium_screencast,en,medium,screencast,uniform_60s,Synthetic time-grid baseline with one anchor every 60 seconds.,349.19,6,12,50.00,48.97
+en_medium_screencast,en,medium,screencast,uniform_30s,Synthetic time-grid baseline with one anchor every 30 seconds.,349.19,12,12,0.00,99.09
+en_medium_practical_demo,en,medium,practical_demo,adaptive_actual,Saved adaptive scene index used by the manuscript evidence run.,324.64,21,21,0.00,71.46
+en_medium_practical_demo,en,medium,practical_demo,static_cap_10,Post-hoc cap: evenly subsample at most 10 scenes from adaptive index.,324.64,10,21,52.38,61.30
+en_medium_practical_demo,en,medium,practical_demo,static_cap_20,Post-hoc cap: evenly subsample at most 20 scenes from adaptive index.,324.64,20,21,4.76,71.46
+en_medium_practical_demo,en,medium,practical_demo,static_cap_30,Post-hoc cap: evenly subsample at most 30 scenes from adaptive index.,324.64,21,21,0.00,71.46
+en_medium_practical_demo,en,medium,practical_demo,uniform_60s,Synthetic time-grid baseline with one anchor every 60 seconds.,324.64,6,21,71.43,52.67
+en_medium_practical_demo,en,medium,practical_demo,uniform_30s,Synthetic time-grid baseline with one anchor every 30 seconds.,324.64,11,21,47.62,97.34
+en_long_talking_head,en,long,talking_head,adaptive_actual,Saved adaptive scene index used by the manuscript evidence run.,990.68,69,69,0.00,78.73
+en_long_talking_head,en,long,talking_head,static_cap_10,Post-hoc cap: evenly subsample at most 10 scenes from adaptive index.,990.68,10,69,85.51,26.14
+en_long_talking_head,en,long,talking_head,static_cap_20,Post-hoc cap: evenly subsample at most 20 scenes from adaptive index.,990.68,20,69,71.01,52.89
+en_long_talking_head,en,long,talking_head,static_cap_30,Post-hoc cap: evenly subsample at most 30 scenes from adaptive index.,990.68,30,69,56.52,65.01
+en_long_talking_head,en,long,talking_head,uniform_60s,Synthetic time-grid baseline with one anchor every 60 seconds.,990.68,17,69,75.36,51.68
+en_long_talking_head,en,long,talking_head,uniform_30s,Synthetic time-grid baseline with one anchor every 30 seconds.,990.68,34,69,50.72,99.93
+en_long_slide-centric,en,long,slide-centric,adaptive_actual,Saved adaptive scene index used by the manuscript evidence run.,866.48,80,80,0.00,99.14
+en_long_slide-centric,en,long,slide-centric,static_cap_10,Post-hoc cap: evenly subsample at most 10 scenes from adaptive index.,866.48,10,80,87.50,30.93
+en_long_slide-centric,en,long,slide-centric,static_cap_20,Post-hoc cap: evenly subsample at most 20 scenes from adaptive index.,866.48,20,80,75.00,64.98
+en_long_slide-centric,en,long,slide-centric,static_cap_30,Post-hoc cap: evenly subsample at most 30 scenes from adaptive index.,866.48,30,80,62.50,85.52
+en_long_slide-centric,en,long,slide-centric,uniform_60s,Synthetic time-grid baseline with one anchor every 60 seconds.,866.48,15,80,81.25,51.93
+en_long_slide-centric,en,long,slide-centric,uniform_30s,Synthetic time-grid baseline with one anchor every 30 seconds.,866.48,29,80,63.75,98.79
+en_long_screencast,en,long,screencast,adaptive_actual,Saved adaptive scene index used by the manuscript evidence run.,706.16,30,30,0.00,77.60
+en_long_screencast,en,long,screencast,static_cap_10,Post-hoc cap: evenly subsample at most 10 scenes from adaptive index.,706.16,10,30,66.67,38.23
+en_long_screencast,en,long,screencast,static_cap_20,Post-hoc cap: evenly subsample at most 20 scenes from adaptive index.,706.16,20,30,33.33,65.42
+en_long_screencast,en,long,screencast,static_cap_30,Post-hoc cap: evenly subsample at most 30 scenes from adaptive index.,706.16,30,30,0.00,77.60
+en_long_screencast,en,long,screencast,uniform_60s,Synthetic time-grid baseline with one anchor every 60 seconds.,706.16,12,30,60.00,50.56
+en_long_screencast,en,long,screencast,uniform_30s,Synthetic time-grid baseline with one anchor every 30 seconds.,706.16,24,30,20.00,99.98
+en_long_practical_demo,en,long,practical_demo,adaptive_actual,Saved adaptive scene index used by the manuscript evidence run.,1173.51,123,123,0.00,99.96
+en_long_practical_demo,en,long,practical_demo,static_cap_10,Post-hoc cap: evenly subsample at most 10 scenes from adaptive index.,1173.51,10,123,91.87,22.16
+en_long_practical_demo,en,long,practical_demo,static_cap_20,Post-hoc cap: evenly subsample at most 20 scenes from adaptive index.,1173.51,20,123,83.74,47.72
+en_long_practical_demo,en,long,practical_demo,static_cap_30,Post-hoc cap: evenly subsample at most 30 scenes from adaptive index.,1173.51,30,123,75.61,73.11
+en_long_practical_demo,en,long,practical_demo,uniform_60s,Synthetic time-grid baseline with one anchor every 60 seconds.,1173.51,20,123,83.74,51.55
+en_long_practical_demo,en,long,practical_demo,uniform_30s,Synthetic time-grid baseline with one anchor every 30 seconds.,1173.51,40,123,67.48,99.96
+ru_short_talking_head,ru,short,talking_head,adaptive_actual,Saved adaptive scene index used by the manuscript evidence run.,177.61,17,17,0.00,99.66
+ru_short_talking_head,ru,short,talking_head,static_cap_10,Post-hoc cap: evenly subsample at most 10 scenes from adaptive index.,177.61,10,17,41.18,95.72
+ru_short_talking_head,ru,short,talking_head,static_cap_20,Post-hoc cap: evenly subsample at most 20 scenes from adaptive index.,177.61,17,17,0.00,99.66
+ru_short_talking_head,ru,short,talking_head,static_cap_30,Post-hoc cap: evenly subsample at most 30 scenes from adaptive index.,177.61,17,17,0.00,99.66
+ru_short_talking_head,ru,short,talking_head,uniform_60s,Synthetic time-grid baseline with one anchor every 60 seconds.,177.61,3,17,82.35,43.92
+ru_short_talking_head,ru,short,talking_head,uniform_30s,Synthetic time-grid baseline with one anchor every 30 seconds.,177.61,6,17,64.71,93.46
+ru_short_slide-centric,ru,short,slide-centric,adaptive_actual,Saved adaptive scene index used by the manuscript evidence run.,75.96,6,6,0.00,98.74
+ru_short_slide-centric,ru,short,slide-centric,static_cap_10,Post-hoc cap: evenly subsample at most 10 scenes from adaptive index.,75.96,6,6,0.00,98.74
+ru_short_slide-centric,ru,short,slide-centric,static_cap_20,Post-hoc cap: evenly subsample at most 20 scenes from adaptive index.,75.96,6,6,0.00,98.74
+ru_short_slide-centric,ru,short,slide-centric,static_cap_30,Post-hoc cap: evenly subsample at most 30 scenes from adaptive index.,75.96,6,6,0.00,98.74
+ru_short_slide-centric,ru,short,slide-centric,uniform_60s,Synthetic time-grid baseline with one anchor every 60 seconds.,75.96,2,6,66.67,60.56
+ru_short_slide-centric,ru,short,slide-centric,uniform_30s,Synthetic time-grid baseline with one anchor every 30 seconds.,75.96,3,6,50.00,98.74
+ru_short_screencast,ru,short,screencast,adaptive_actual,Saved adaptive scene index used by the manuscript evidence run.,124.56,10,10,0.00,97.94
+ru_short_screencast,ru,short,screencast,static_cap_10,Post-hoc cap: evenly subsample at most 10 scenes from adaptive index.,124.56,10,10,0.00,97.94
+ru_short_screencast,ru,short,screencast,static_cap_20,Post-hoc cap: evenly subsample at most 20 scenes from adaptive index.,124.56,10,10,0.00,97.94
+ru_short_screencast,ru,short,screencast,static_cap_30,Post-hoc cap: evenly subsample at most 30 scenes from adaptive index.,124.56,10,10,0.00,97.94
+ru_short_screencast,ru,short,screencast,uniform_60s,Synthetic time-grid baseline with one anchor every 60 seconds.,124.56,3,10,70.00,52.99
+ru_short_screencast,ru,short,screencast,uniform_30s,Synthetic time-grid baseline with one anchor every 30 seconds.,124.56,5,10,50.00,99.55
+ru_short_practical_demo,ru,short,practical_demo,adaptive_actual,Saved adaptive scene index used by the manuscript evidence run.,181.13,23,23,0.00,99.93
+ru_short_practical_demo,ru,short,practical_demo,static_cap_10,Post-hoc cap: evenly subsample at most 10 scenes from adaptive index.,181.13,10,23,56.52,99.93
+ru_short_practical_demo,ru,short,practical_demo,static_cap_20,Post-hoc cap: evenly subsample at most 20 scenes from adaptive index.,181.13,20,23,13.04,99.93
+ru_short_practical_demo,ru,short,practical_demo,static_cap_30,Post-hoc cap: evenly subsample at most 30 scenes from adaptive index.,181.13,23,23,0.00,99.93
+ru_short_practical_demo,ru,short,practical_demo,uniform_60s,Synthetic time-grid baseline with one anchor every 60 seconds.,181.13,4,23,82.61,51.90
+ru_short_practical_demo,ru,short,practical_demo,uniform_30s,Synthetic time-grid baseline with one anchor every 30 seconds.,181.13,7,23,69.57,99.93
+ru_medium_talking_head,ru,medium,talking_head,adaptive_actual,Saved adaptive scene index used by the manuscript evidence run.,345.50,23,23,0.00,90.30
+ru_medium_talking_head,ru,medium,talking_head,static_cap_10,Post-hoc cap: evenly subsample at most 10 scenes from adaptive index.,345.50,10,23,56.52,73.23
+ru_medium_talking_head,ru,medium,talking_head,static_cap_20,Post-hoc cap: evenly subsample at most 20 scenes from adaptive index.,345.50,20,23,13.04,88.57
+ru_medium_talking_head,ru,medium,talking_head,static_cap_30,Post-hoc cap: evenly subsample at most 30 scenes from adaptive index.,345.50,23,23,0.00,90.30
+ru_medium_talking_head,ru,medium,talking_head,uniform_60s,Synthetic time-grid baseline with one anchor every 60 seconds.,345.50,6,23,73.91,49.49
+ru_medium_talking_head,ru,medium,talking_head,uniform_30s,Synthetic time-grid baseline with one anchor every 30 seconds.,345.50,12,23,47.83,99.86
+ru_medium_slide-centric,ru,medium,slide-centric,adaptive_actual,Saved adaptive scene index used by the manuscript evidence run.,308.50,8,8,0.00,47.97
+ru_medium_slide-centric,ru,medium,slide-centric,static_cap_10,Post-hoc cap: evenly subsample at most 10 scenes from adaptive index.,308.50,8,8,0.00,47.97
+ru_medium_slide-centric,ru,medium,slide-centric,static_cap_20,Post-hoc cap: evenly subsample at most 20 scenes from adaptive index.,308.50,8,8,0.00,47.97
+ru_medium_slide-centric,ru,medium,slide-centric,static_cap_30,Post-hoc cap: evenly subsample at most 30 scenes from adaptive index.,308.50,8,8,0.00,47.97
+ru_medium_slide-centric,ru,medium,slide-centric,uniform_60s,Synthetic time-grid baseline with one anchor every 60 seconds.,308.50,6,8,25.00,52.84
+ru_medium_slide-centric,ru,medium,slide-centric,uniform_30s,Synthetic time-grid baseline with one anchor every 30 seconds.,308.50,11,8,-37.50,99.84
+ru_medium_screencast,ru,medium,screencast,adaptive_actual,Saved adaptive scene index used by the manuscript evidence run.,517.54,51,51,0.00,98.16
+ru_medium_screencast,ru,medium,screencast,static_cap_10,Post-hoc cap: evenly subsample at most 10 scenes from adaptive index.,517.54,10,51,80.39,52.94
+ru_medium_screencast,ru,medium,screencast,static_cap_20,Post-hoc cap: evenly subsample at most 20 scenes from adaptive index.,517.54,20,51,60.78,88.11
+ru_medium_screencast,ru,medium,screencast,static_cap_30,Post-hoc cap: evenly subsample at most 30 scenes from adaptive index.,517.54,30,51,41.18,94.87
+ru_medium_screencast,ru,medium,screencast,uniform_60s,Synthetic time-grid baseline with one anchor every 60 seconds.,517.54,9,51,82.35,51.01
+ru_medium_screencast,ru,medium,screencast,uniform_30s,Synthetic time-grid baseline with one anchor every 30 seconds.,517.54,18,51,64.71,99.90
+ru_medium_practical_demo,ru,medium,practical_demo,adaptive_actual,Saved adaptive scene index used by the manuscript evidence run.,443.88,49,49,0.00,99.80
+ru_medium_practical_demo,ru,medium,practical_demo,static_cap_10,Post-hoc cap: evenly subsample at most 10 scenes from adaptive index.,443.88,10,49,79.59,63.53
+ru_medium_practical_demo,ru,medium,practical_demo,static_cap_20,Post-hoc cap: evenly subsample at most 20 scenes from adaptive index.,443.88,20,49,59.18,96.42
+ru_medium_practical_demo,ru,medium,practical_demo,static_cap_30,Post-hoc cap: evenly subsample at most 30 scenes from adaptive index.,443.88,30,49,38.78,99.58
+ru_medium_practical_demo,ru,medium,practical_demo,uniform_60s,Synthetic time-grid baseline with one anchor every 60 seconds.,443.88,8,49,83.67,52.49
+ru_medium_practical_demo,ru,medium,practical_demo,uniform_30s,Synthetic time-grid baseline with one anchor every 30 seconds.,443.88,15,49,69.39,98.22
+ru_long_talking_head,ru,long,talking_head,adaptive_actual,Saved adaptive scene index used by the manuscript evidence run.,913.63,37,37,0.00,73.66
+ru_long_talking_head,ru,long,talking_head,static_cap_10,Post-hoc cap: evenly subsample at most 10 scenes from adaptive index.,913.63,10,37,72.97,30.10
+ru_long_talking_head,ru,long,talking_head,static_cap_20,Post-hoc cap: evenly subsample at most 20 scenes from adaptive index.,913.63,20,37,45.95,58.01
+ru_long_talking_head,ru,long,talking_head,static_cap_30,Post-hoc cap: evenly subsample at most 30 scenes from adaptive index.,913.63,30,37,18.92,66.77
+ru_long_talking_head,ru,long,talking_head,uniform_60s,Synthetic time-grid baseline with one anchor every 60 seconds.,913.63,16,37,56.76,52.32
+ru_long_talking_head,ru,long,talking_head,uniform_30s,Synthetic time-grid baseline with one anchor every 30 seconds.,913.63,31,37,16.22,99.93
+ru_long_slide-centric,ru,long,slide-centric,adaptive_actual,Saved adaptive scene index used by the manuscript evidence run.,831.50,59,59,0.00,99.58
+ru_long_slide-centric,ru,long,slide-centric,static_cap_10,Post-hoc cap: evenly subsample at most 10 scenes from adaptive index.,831.50,10,59,83.05,33.07
+ru_long_slide-centric,ru,long,slide-centric,static_cap_20,Post-hoc cap: evenly subsample at most 20 scenes from adaptive index.,831.50,20,59,66.10,67.59
+ru_long_slide-centric,ru,long,slide-centric,static_cap_30,Post-hoc cap: evenly subsample at most 30 scenes from adaptive index.,831.50,30,59,49.15,89.84
+ru_long_slide-centric,ru,long,slide-centric,uniform_60s,Synthetic time-grid baseline with one anchor every 60 seconds.,831.50,14,59,76.27,50.39
+ru_long_slide-centric,ru,long,slide-centric,uniform_30s,Synthetic time-grid baseline with one anchor every 30 seconds.,831.50,28,59,52.54,99.34
+ru_long_screencast,ru,long,screencast,adaptive_actual,Saved adaptive scene index used by the manuscript evidence run.,969.82,119,119,0.00,99.92
+ru_long_screencast,ru,long,screencast,static_cap_10,Post-hoc cap: evenly subsample at most 10 scenes from adaptive index.,969.82,10,119,91.60,27.53
+ru_long_screencast,ru,long,screencast,static_cap_20,Post-hoc cap: evenly subsample at most 20 scenes from adaptive index.,969.82,20,119,83.19,58.46
+ru_long_screencast,ru,long,screencast,static_cap_30,Post-hoc cap: evenly subsample at most 30 scenes from adaptive index.,969.82,30,119,74.79,87.23
+ru_long_screencast,ru,long,screencast,uniform_60s,Synthetic time-grid baseline with one anchor every 60 seconds.,969.82,17,119,85.71,52.07
+ru_long_screencast,ru,long,screencast,uniform_30s,Synthetic time-grid baseline with one anchor every 30 seconds.,969.82,33,119,72.27,99.92
+ru_long_practical_demo,ru,long,practical_demo,adaptive_actual,Saved adaptive scene index used by the manuscript evidence run.,955.20,81,81,0.00,96.11
+ru_long_practical_demo,ru,long,practical_demo,static_cap_10,Post-hoc cap: evenly subsample at most 10 scenes from adaptive index.,955.20,10,81,87.65,28.89
+ru_long_practical_demo,ru,long,practical_demo,static_cap_20,Post-hoc cap: evenly subsample at most 20 scenes from adaptive index.,955.20,20,81,75.31,59.67
+ru_long_practical_demo,ru,long,practical_demo,static_cap_30,Post-hoc cap: evenly subsample at most 30 scenes from adaptive index.,955.20,30,81,62.96,78.62
+ru_long_practical_demo,ru,long,practical_demo,uniform_60s,Synthetic time-grid baseline with one anchor every 60 seconds.,955.20,16,81,80.25,50.36
+ru_long_practical_demo,ru,long,practical_demo,uniform_30s,Synthetic time-grid baseline with one anchor every 30 seconds.,955.20,32,81,60.49,99.04

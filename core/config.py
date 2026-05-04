@@ -96,7 +96,7 @@ class Settings(BaseSettings):
     # ── Description service settings (Vertex AI Gemini) ────────────
     google_cloud_project: str = ""
     google_cloud_location: str = "global"
-    description_model: str = Field(default="gemini-3-flash-preview")
+    description_model: str = Field(default="gemini-2.5-flash")
     max_description_length: int = 400
 
     # ── TTS settings ──────────────────────────────────────────────

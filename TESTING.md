@@ -45,6 +45,64 @@ of pytest discovery:
 - `benchmark_tts_latency.py` — live TTS latency benchmark
 - `pipeline_output_smoke.py` — real end-to-end pipeline smoke script
 
+## Paper pre-submission checks (non-pytest)
+
+These checks target manuscript readiness, not application runtime behavior.
+
+### Sanity scan for manuscript leakage
+
+```bash
+python scripts/paper_sanity_check.py --paper-dir academic_paper
+```
+
+This script scans `.tex` sources for publication-risk markers such as:
+
+- local paths and localhost URLs
+- internal run/job IDs and repo paths
+- draft markers (`TODO`, `TBD`, `FIXME`)
+- placeholder citations
+- log-style/internal runtime phrasing
+
+### Reproducible PDF build guard
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/build_paper.ps1
+```
+
+This runs `pdflatex -> bibtex -> pdflatex -> pdflatex`, checks page count,
+and fails when undefined citations/references remain in the final log.
+
+### One-command preflight
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/pre_submission_check.ps1
+```
+
+This executes both the sanity scan and the PDF build checks.
+
+### Paper extension diagnostics
+
+These scripts regenerate the post-hoc scene-selection ablation and qualitative
+case notes from saved B1 artifacts. They should not call hosted models or TTS.
+
+```bash
+python scripts/analyze_scene_selection_ablation.py
+python scripts/extract_scene_case_notes.py
+```
+
+Expected outputs:
+
+- `evaluation/paper_extensions/scene_selection_ablation_summary.csv`
+- `evaluation/paper_extensions/scene_selection_ablation_per_video.csv`
+- `evaluation/paper_extensions/qualitative_scene_cases.csv`
+- `evaluation/paper_extensions/qualitative_scene_cases.md`
+
+Run lint on the paper helper scripts:
+
+```bash
+ruff check scripts/analyze_scene_selection_ablation.py scripts/extract_scene_case_notes.py
+```
+
 ---
 
 ## Step 1: process a video

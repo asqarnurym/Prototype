@@ -27,3 +27,5 @@ Folder uses short filenames to avoid Windows path-length issues.
     original: WhisperX Time-Accurate Speech Transcription of Long-Form Audio.pdf
 13. [OK] R13_Wagner2024_CrisperWhisper.pdf
     original: CrisperWhisper_Accurate Timestamps on Verbatim Speech Transcriptions.pdf
+14. [OK] R14_GeminiTeam2025_Gemini25.pdf
+    original: Gemini 2.5_ Pushing the Frontier with Advanced Reasoning, Multimodality, Long Context, and Next Generation Agentic Capabilities.pdf
