@@ -14,22 +14,29 @@ venv/
 .python-version
 
 # Temporary files (audio, frames, TTS)
-temp/
+temp/*
+!temp/.gitkeep
 
 # Output artifacts (too large for git)
-output/
+output/*
+!output/.gitkeep
 
 # Input videos (also large)
+!input/.gitkeep
 input/*.mp4
 input/*.avi
 input/*.mkv
 input/**/*.mp4
 input/**/*.avi
 input/**/*.mkv
-input/_uploads/
-input/corpus_finevideo/
-input/corpus_normalized/
-input/corpus_finevideo_metadata/
+input/_uploads/*
+!input/_uploads/.gitkeep
+input/corpus_finevideo/*
+!input/corpus_finevideo/.gitkeep
+input/corpus_normalized/*
+!input/corpus_normalized/.gitkeep
+input/corpus_finevideo_metadata/*
+!input/corpus_finevideo_metadata/.gitkeep
 
 # Evaluation generated manifests and run outputs
 evaluation/finevideo_selected_manifest_downloaded.csv
@@ -53,7 +60,8 @@ evaluation/run_*/
 .sisyphus/
 
 # Logs
-logs/
+logs/*
+!logs/.gitkeep
 uvicorn-qa.log
 
 # Build
