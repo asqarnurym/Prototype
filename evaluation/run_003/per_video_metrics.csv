@@ -1,0 +1,2 @@
+vid_id,language,duration_bucket,content_type,video_duration_sec,b0_asr_sec,b0_rtf,b1_total_sec,b1_rtf,asr_confidence,low_conf_ratio,overlap_ratio,scene_count,scene_density_per_min,tail_uncovered_sec,coverage_15s_pct
+en_short_talking_head,en,short,talking_head,197.34,35.65,0.1807,99.16,0.5025,0.9458,0.024,0.0,22,6.69,14.41,99.8

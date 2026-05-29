@@ -11,7 +11,6 @@ __pycache__/
 *.egg-info/
 venv/
 .venv/
-.python-version
 
 # Temporary files (audio, frames, TTS)
 temp/*
@@ -38,12 +37,11 @@ input/corpus_normalized/*
 input/corpus_finevideo_metadata/*
 !input/corpus_finevideo_metadata/.gitkeep
 
-# Evaluation generated manifests and run outputs
+# Evaluation generated manifests
 evaluation/finevideo_selected_manifest_downloaded.csv
 evaluation/finevideo_selected_manifest_normalized.csv
 evaluation/corpus_manifest_seeded.csv
 evaluation/corpus_manifest_normalized.csv
-evaluation/run_*/
 
 # IDE
 .vscode/
@@ -79,8 +77,6 @@ academic_paper/*.pdf
 academic_paper/*.bbl
 academic_paper/*.blg
 academic_paper/*.log
-selected_articles_conference/*.pdf
-template/*.pdf
 *.synctex.gz
 *.aux
 *.fdb_latexmk

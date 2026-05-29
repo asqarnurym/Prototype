@@ -1,0 +1,52 @@
+{
+  "corpus": {
+    "n_videos": 24,
+    "languages": [
+      "en",
+      "ru"
+    ],
+    "duration_buckets": [
+      "long",
+      "medium",
+      "short"
+    ],
+    "content_types": [
+      "practical_demo",
+      "screencast",
+      "slide-centric",
+      "talking_head"
+    ]
+  },
+  "overall": {
+    "b0_rtf_mean": 0.1927,
+    "b0_rtf_median": 0.1859,
+    "b1_rtf_mean": 0.4333,
+    "b1_rtf_median": 0.4239,
+    "b1_vs_b0_ratio": 2.249,
+    "asr_confidence_mean": 0.9424,
+    "coverage_15s_mean": 91.7,
+    "videos_b1_rtf_ge_1": 0,
+    "videos_with_zero_scenes": 0
+  },
+  "by_language": {
+    "en": {
+      "n": 12,
+      "b0_rtf_mean": 0.1579,
+      "b1_rtf_mean": 0.3692,
+      "asr_confidence_mean": 0.9475,
+      "coverage_15s_mean": 91.58
+    },
+    "ru": {
+      "n": 12,
+      "b0_rtf_mean": 0.2275,
+      "b1_rtf_mean": 0.4974,
+      "asr_confidence_mean": 0.9374,
+      "coverage_15s_mean": 91.82
+    }
+  },
+  "notes": [
+    "Metrics are engineering proxies, not direct learning-outcome measures.",
+    "B0 = ASR-only baseline (enable_visual=false).",
+    "B1 = full pipeline (enable_visual=true)."
+  ]
+}

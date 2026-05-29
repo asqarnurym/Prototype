@@ -1,0 +1,34 @@
+=== BY LANGUAGE ===
+,b0_rtf,b0_rtf,b0_rtf,b1_rtf,b1_rtf,b1_rtf,asr_confidence,asr_confidence,coverage_15s_pct,coverage_15s_pct,coverage_15s_pct,scene_density_per_min
+
+,mean,median,std,mean,median,std,mean,median,mean,median,std,mean
+
+language,,,,,,,,,,,,
+
+en,0.158,0.164,0.033,0.369,0.353,0.081,0.948,0.96,91.575,98.2,10.925,4.403
+
+ru,0.228,0.212,0.059,0.497,0.504,0.125,0.937,0.939,91.817,98.45,15.699,5.012
+
+
+=== BY DURATION ===
+,b0_rtf,b0_rtf,b1_rtf,b1_rtf,coverage_15s_pct,coverage_15s_pct
+
+,mean,median,mean,median,mean,median
+
+duration_bucket,,,,,,
+
+long,0.208,0.175,0.414,0.394,90.588,97.6
+
+medium,0.178,0.191,0.365,0.338,88.025,97.75
+
+short,0.192,0.192,0.522,0.527,96.475,99.2
+
+
+=== OVERALL ===
+,b0_rtf,b1_rtf,asr_confidence,coverage_15s_pct
+
+mean,0.193,0.433,0.942,91.696
+
+median,0.186,0.424,,
+
+std,0.059,0.122,0.03,13.228
