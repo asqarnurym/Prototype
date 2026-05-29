@@ -1,31 +1,112 @@
 Selected references for conference paper
-Folder uses short filenames to avoid Windows path-length issues.
+Synchronized with academic_paper/references.bib and the compiled IEEE reference order.
+Status date: 2026-05-29
 
-01. [OK] R01_Gernsbacher2015_VideoCaptionsBenefitEveryone.pdf
-    original: Video Captions Benefit Everyone.pdf
-02. [OK] R02_MalakulPark2023_AutoSubtitleEducationalVideos.pdf
-    original: The effects of using an auto‑subtitle system in educational videos to facilitate learning for secondary school students learning comprehension, cognitive load, and satisfaction.pdf
-03. [OK] R03_Mirzaei2018_ASRErrorsPartialSynchronizedCaption.pdf
-    original: Exploiting Automatic Speech Recognition Errors to Enhance Partial and Synchronized Caption for Facilitating Second Language Listening.pdf
-04. [OK] R04_Mayer2020_FiveWaysInstructionalVideo.pdf
-    original: Five ways to increase the effectiveness of instructional video.pdf
-05. [OK] R05_CastroAlonso2021_FiveStrategiesCognitiveLoad.pdf
-    original: Five Strategies for Optimizing Instructional Materials Instructor- and Learner-Managed Cognitive Load.pdf
-06. [OK] R06_LangeCostley2020_ImprovingOnlineVideoLectures.pdf
-    original: Improving online video lectures learning challenges created by media.pdf
-07. [OK] R07_KrugerDoherty2016_MeasuringCognitiveLoadVideo.pdf
-    original: Measuring cognitive load in the presence of educational video Towards a multimodal methodology.pdf
-08. [OK] R08_LeCunff2024_NeurodiversityCognitiveLoadOnline.pdf
-    original: Neurodiversity and cognitive load in online learning A focus group study.pdf
-09. [OK] R09_Horlin2024_LectureCaptureDisabledNeurodivergent.pdf
-    original: I can be a “normal” student the role of lecture capture in supporting disabled and neurodivergent students’ participation in higher education.pdf
-10. [OK] R10_Malik2020_ASRSurvey.pdf
-    original: Automatic speech recognition a survey.pdf
-11. [OK] R11_Radford2022_WhisperLargeScaleWeakSupervision.pdf
-    original: Robust Speech Recognition via Large-Scale Weak Supervision.pdf
-12. [OK] R12_Bain2023_WhisperX.pdf
-    original: WhisperX Time-Accurate Speech Transcription of Long-Form Audio.pdf
-13. [OK] R13_Wagner2024_CrisperWhisper.pdf
-    original: CrisperWhisper_Accurate Timestamps on Verbatim Speech Transcriptions.pdf
-14. [OK] R14_GeminiTeam2025_Gemini25.pdf
-    original: Gemini 2.5_ Pushing the Frontier with Advanced Reasoning, Multimodality, Long Context, and Next Generation Agentic Capabilities.pdf
+Folder policy:
+- PDF entries are local article copies.
+- URL entries are web/software references or sources whose local PDF is not available.
+- Reference numbers follow first appearance in the current manuscript, matching IEEE output.
+
+01. [PDF] R01_Gernsbacher2015_VideoCaptionsBenefitEveryone.pdf
+    key: Gernsbacher2015
+    title: Video Captions Benefit Everyone
+    source: C:\Users\asqar\Desktop\Thesis\Article base\Video Captions Benefit Everyone.pdf
+
+02. [PDF] R02_Mayer2020_FiveWaysInstructionalVideo.pdf
+    key: Mayer2020
+    title: Five ways to increase the effectiveness of instructional video
+    source: C:\Users\asqar\Desktop\Thesis\Article base\Five ways to increase the effectiveness of instructional video.pdf
+
+03. [PDF] R03_Horlin2024_LectureCaptureDisabledNeurodivergent.pdf
+    key: Horlin2024
+    title: I can be a "normal" student: the role of lecture capture in supporting disabled and neurodivergent students' participation in higher education
+    source: C:\Users\asqar\Desktop\Thesis\Article base\I can be a "normal" student the role of lecture capture in supporting disabled and neurodivergent students' participation in higher education.pdf
+
+04. [PDF] R04_IngavelezGuerra2022_AutomaticAdaptationOER.pdf
+    key: IngavelezGuerra2022
+    title: Automatic Adaptation of Open Educational Resources
+    source: C:\Users\asqar\Desktop\Thesis\Article base\Automatic Adaptation of Open Educational Resources An Approach From a Multilevel Methodology Based on Students' Preferences.pdf
+
+05. [PDF] R05_MalakulPark2023_AutoSubtitleEducationalVideos.pdf
+    key: Malakul2023
+    title: The effects of using an auto-subtitle system in educational videos
+    source: C:\Users\asqar\Desktop\Thesis\Article base\The effects of using an auto-subtitle system in educational videos to facilitate learning for secondary school students learning comprehension, cognitive load, and satisfaction.pdf
+
+06. [PDF] R06_Mirzaei2018_ASRErrorsPartialSynchronizedCaption.pdf
+    key: Mirzaei2018
+    title: Exploiting Automatic Speech Recognition Errors to Enhance Partial and Synchronized Caption
+    source: C:\Users\asqar\Desktop\Thesis\Article base\Exploiting Automatic Speech Recognition Errors to Enhance Partial and Synchronized Caption for Facilitating Second Language Listening.pdf
+
+07. [URL] R07_WCAG21_WebContentAccessibilityGuidelines.url
+    key: WCAG21
+    title: Web Content Accessibility Guidelines (WCAG) 2.1
+    source: https://www.w3.org/TR/WCAG21/
+
+08. [URL] R08_W3CMediaReqs_MediaAccessibilityUserRequirements.url
+    key: W3CMediaReqs
+    title: Media Accessibility User Requirements
+    source: https://www.w3.org/TR/media-accessibility-reqs/
+
+09. [URL] R09_W3CMediaAccessible_MakingAudioVideoMediaAccessible.url
+    key: W3CMediaAccessible
+    title: Making Audio and Video Media Accessible
+    source: https://www.w3.org/WAI/media/av/
+
+10. [PDF] R10_Lange2020_ImprovingOnlineVideoLectures.pdf
+    key: Lange2020
+    title: Improving online video lectures: learning challenges created by media
+    source: C:\Users\asqar\Desktop\Thesis\Article base\Improving online video lectures learning challenges created by media.pdf
+
+11. [PDF] R11_Kruger2016_MeasuringCognitiveLoadVideo.pdf
+    key: Kruger2016
+    title: Measuring cognitive load in the presence of educational video
+    source: C:\Users\asqar\Desktop\Thesis\Article base\Measuring cognitive load in the presence of educational video Towards a multimodal methodology.pdf
+
+12. [PDF] R12_LeCunff2024_NeurodiversityCognitiveLoadOnline.pdf
+    key: LeCunff2024
+    title: Neurodiversity and cognitive load in online learning
+    source: C:\Users\asqar\Desktop\Thesis\Article base\Neurodiversity and cognitive load in online learning A focus group study.pdf
+
+13. [PDF] R13_Malik2020_ASRSurvey.pdf
+    key: Malik2020
+    title: Automatic speech recognition: a survey
+    source: C:\Users\asqar\Desktop\Thesis\Article base\Automatic speech recognition a survey.pdf
+
+14. [PDF] R14_Radford2022_WhisperLargeScaleWeakSupervision.pdf
+    key: Radford2022
+    title: Robust Speech Recognition via Large-Scale Weak Supervision
+    source: C:\Users\asqar\Desktop\Thesis\Article base\Robust Speech Recognition via Large-Scale Weak Supervision.pdf
+
+15. [PDF] R15_Bain2023_WhisperX.pdf
+    key: Bain2023
+    title: WhisperX: Time-Accurate Speech Transcription of Long-Form Audio
+    source: C:\Users\asqar\Desktop\Thesis\Article base\WhisperX Time-Accurate Speech Transcription of Long-Form Audio.pdf
+
+16. [PDF] R16_Wagner2024_CrisperWhisper.pdf
+    key: Wagner2024
+    title: CrisperWhisper: Accurate Timestamps on Verbatim Speech Transcriptions
+    source: C:\Users\asqar\Desktop\Thesis\Article base\CrisperWhisper_Accurate Timestamps on Verbatim Speech Transcriptions.pdf
+
+17. [PDF] R17_Machacek2023_TurningWhisperRealTime.pdf
+    key: Machacek2023
+    title: Turning Whisper into Real-Time Transcription System
+    source: C:\Users\asqar\Desktop\Thesis\Article base\Turning_Whisper_into_Real-Time_Transcription_Syste.pdf
+
+18. [URL] R18_Natalie2021_CollaborativeSceneDescriptions.url
+    key: Natalie2021
+    title: The Efficacy of Collaborative Authoring of Video Scene Descriptions
+    source: https://doi.org/10.1145/3441852.3471201
+    note: Local PDF was not found in C:\Users\asqar\Desktop\Thesis\Article base.
+
+19. [URL] R19_PySceneDetect_Software.url
+    key: PySceneDetect
+    title: PySceneDetect: Intelligent video scene change detection and analysis tool
+    source: https://github.com/Breakthrough/PySceneDetect
+
+20. [PDF] R20_GeminiTeam2025_Gemini25.pdf
+    key: GeminiTeam2025
+    title: Gemini 2.5: Pushing the Frontier with Advanced Reasoning, Multimodality, Long Context, and Next Generation Agentic Capabilities
+    source: C:\Users\asqar\Desktop\Thesis\Article base\Gemini 2.5_ Pushing the Frontier with Advanced Reasoning, Multimodality, Long Context, and Next Generation Agentic Capabilities.pdf
+
+Removed from active conference set:
+- CastroAlonso2021: local PDF existed in the old folder, but the source is no longer cited in academic_paper/references.bib.
