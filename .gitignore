@@ -64,6 +64,10 @@ logs/*
 !logs/.gitkeep
 uvicorn-qa.log
 
+# Frontend
+node_modules/
+frontend/dist/
+
 # Build
 dist/
 build/

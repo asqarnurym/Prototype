@@ -84,9 +84,10 @@ def test_settings_blank_tts_provider_keeps_autodetect(tmp_path):
     assert settings.google_application_credentials == str(credentials_path.resolve())
 
 
-def test_settings_enable_vertex_description_mode_from_project_config(tmp_path):
+def test_settings_enable_vertex_description_mode_from_project_config(tmp_path, monkeypatch):
     env_path = tmp_path / ".env"
     env_path.write_text("GOOGLE_CLOUD_PROJECT=prototype-487106\n")
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
 
     settings = Settings(_env_file=env_path, project_root=tmp_path)
 
@@ -95,11 +96,38 @@ def test_settings_enable_vertex_description_mode_from_project_config(tmp_path):
     assert settings.google_cloud_location == "global"
 
 
-def test_settings_fallback_description_mode_without_project(tmp_path):
+def test_settings_enable_gemini_developer_mode_from_api_key(tmp_path, monkeypatch):
+    env_path = tmp_path / ".env"
+    env_path.write_text("GEMINI_API_KEY=test-api-key\n")
+    monkeypatch.delenv("GOOGLE_CLOUD_PROJECT", raising=False)
+
+    settings = Settings(_env_file=env_path, project_root=tmp_path)
+
+    assert settings.description_service_configured is True
+    assert settings.description_mode == "developer"
+    assert settings.description_runtime_info()["provider"] == "google_gemini_developer_api"
+    assert settings.description_runtime_info()["auth_mode"] == "api_key"
+    assert settings.description_runtime_info()["project"] is None
+
+
+def test_settings_vertex_mode_wins_when_both_vertex_and_api_key_are_present(tmp_path):
+    env_path = tmp_path / ".env"
+    env_path.write_text(
+        "GEMINI_API_KEY=test-api-key\nGOOGLE_CLOUD_PROJECT=prototype-487106\n"
+    )
+
+    settings = Settings(_env_file=env_path, project_root=tmp_path)
+
+    assert settings.description_mode == "vertex"
+    assert settings.description_runtime_info()["provider"] == "google_vertex_ai"
+
+
+def test_settings_fallback_description_mode_without_project(tmp_path, monkeypatch):
     original_project = os.environ.get("GOOGLE_CLOUD_PROJECT")
 
     try:
         os.environ.pop("GOOGLE_CLOUD_PROJECT", None)
+        monkeypatch.delenv("GEMINI_API_KEY", raising=False)
         settings = Settings(_env_file=None, project_root=tmp_path)
     finally:
         if original_project is None:

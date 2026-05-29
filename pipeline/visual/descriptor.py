@@ -63,11 +63,11 @@ def _get_description_client():
         with _client_lock:
             if _client is None:
                 from google import genai
-                from google.genai import types
 
                 runtime = settings.description_runtime_info()
                 logger.info(
-                    "Initializing Gemini Vertex client for scene descriptions [sdk=%s model=%s project=%s location=%s auth=%s service_account=%s]",
+                    "Initializing Gemini client for scene descriptions [provider=%s sdk=%s model=%s project=%s location=%s auth=%s service_account=%s]",
+                    runtime["provider"],
                     runtime["sdk"],
                     runtime["model"],
                     runtime["project"],
@@ -76,12 +76,17 @@ def _get_description_client():
                     runtime["service_account_email"],
                 )
 
-                _client = genai.Client(
-                    vertexai=True,
-                    project=settings.google_cloud_project,
-                    location=settings.google_cloud_location,
-                    http_options=types.HttpOptions(api_version="v1"),
-                )
+                if settings.description_mode == "developer":
+                    _client = genai.Client(api_key=settings.gemini_api_key)
+                else:
+                    from google.genai import types
+
+                    _client = genai.Client(
+                        vertexai=True,
+                        project=settings.google_cloud_project,
+                        location=settings.google_cloud_location,
+                        http_options=types.HttpOptions(api_version="v1"),
+                    )
     return _client
 
 

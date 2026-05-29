@@ -24,6 +24,7 @@ def test_generate_summary_uses_description_config_fields(monkeypatch):
         models = FakeModels()
 
     monkeypatch.setattr(summary, "_client", None)
+    monkeypatch.setattr(summary.settings, "gemini_api_key", "")
     monkeypatch.setattr(summary.settings, "google_cloud_project", "prototype-487106")
     monkeypatch.setattr(summary.settings, "google_cloud_location", "global")
     monkeypatch.setattr(summary.settings, "description_model", "gemini-2.5-flash")
@@ -51,6 +52,7 @@ def test_generate_summary_fallback_uses_scene_content(monkeypatch):
     ]
 
     monkeypatch.setattr(summary, "_client", None)
+    monkeypatch.setattr(summary.settings, "gemini_api_key", "")
     monkeypatch.setattr(summary.settings, "google_cloud_project", "")
 
     result = summary.generate_summary(scenes=scenes, job_id="job-2", language="en")

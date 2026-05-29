@@ -1,0 +1,53 @@
+:root {
+  color-scheme: dark;
+
+  --page-bg: #101826;
+  --panel-bg: #172334;
+  --panel-border: #2f425d;
+  --surface-bg: #0d1521;
+  --text-main: #edf3ff;
+  --text-muted: #b8c6dd;
+  --text-soft: #91a0bb;
+  --accent: #72b6ff;
+  --accent-strong: #1f70d2;
+  --accent-soft: rgba(114, 182, 255, 0.14);
+  --success: #8ae0a1;
+  --danger: #ff9a9a;
+  --focus-ring: 0 0 0 3px rgba(114, 182, 255, 0.4);
+  --radius: 16px;
+  --ui-scale: 1;
+  --subtitle-scale: 1;
+  --subtitle-bg: rgba(0, 0, 0, 0.82);
+  --subtitle-color: rgba(255, 255, 255, 0.94);
+  --subtitle-dim: rgba(255, 255, 255, 0.42);
+  --subtitle-current: #ffd166;
+  --subtitle-previous: #ffe7a4;
+}
+
+.high-contrast {
+  --page-bg: #000;
+  --panel-bg: #050505;
+  --panel-border: #8f8f8f;
+  --surface-bg: #000;
+  --text-main: #fff;
+  --text-muted: #f0f0f0;
+  --text-soft: #d8d8d8;
+  --accent: #fff86d;
+  --accent-strong: #fff86d;
+  --accent-soft: rgba(255, 248, 109, 0.16);
+  --subtitle-bg: rgba(0, 0, 0, 0.96);
+  --subtitle-color: #fff;
+  --subtitle-dim: rgba(255, 255, 255, 0.6);
+  --subtitle-current: #fff86d;
+  --subtitle-previous: #fff2aa;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -107,13 +107,21 @@ Copy-Item .env.example .env
 To use paid Gemini through Vertex AI, configure your Google Cloud project and credentials:
 
 ```env
-# Paid Gemini via Vertex AI
+# Fastest no-billing demo path: Gemini Developer API + edge-tts
+GEMINI_API_KEY=your-ai-studio-api-key
+TTS_PROVIDER=edge
+
+# Optional paid Gemini via Vertex AI
 GOOGLE_CLOUD_PROJECT=your-gcp-project-id
 GOOGLE_CLOUD_LOCATION=global
 
 # Google Cloud ADC / service account JSON
 GOOGLE_APPLICATION_CREDENTIALS=./path/to/service-account.json
 ```
+
+If `GOOGLE_CLOUD_PROJECT` is set, the application uses Vertex AI for
+scene descriptions and summaries. If Vertex AI is not configured but
+`GEMINI_API_KEY` is set, it falls back to the Gemini Developer API.
 
 If `TTS_PROVIDER` is not set, the application picks the provider automatically:
 
@@ -122,13 +130,16 @@ If `TTS_PROVIDER` is not set, the application picks the provider automatically:
 
 The relative path in `GOOGLE_APPLICATION_CREDENTIALS` inside `.env` is resolved from the repository root. If you need to override the selection explicitly, set `TTS_PROVIDER=edge` or `TTS_PROVIDER=google`.
 
-The Gemini integration uses the official `google-genai` SDK with Vertex AI (`vertexai=True`) instead of an AI Studio API key.
+The Gemini integration uses the official `google-genai` SDK and supports both:
+
+- Gemini Developer API via `GEMINI_API_KEY`
+- Vertex AI via `GOOGLE_CLOUD_PROJECT` + `GOOGLE_APPLICATION_CREDENTIALS`
 
 `global` is the safest default for Gemini on Vertex AI here because it works for this project, reduces regional availability issues, and Google recommends it when you don't need strict in-region ML processing.
 
 The default Gemini model in this project is `gemini-2.5-flash`, which is a stable Vertex AI model with text and image input support for the summary and scene-description flows used here. It is configured in `global`, which is currently accessible for this project and avoids unnecessary regional availability issues.
 
-> Without Vertex AI project configuration, descriptions and summaries use fallback content. Without Google credentials, TTS uses free `edge-tts` (Microsoft).
+> Without `GEMINI_API_KEY` or Vertex AI project configuration, descriptions and summaries use fallback content. Without Google credentials, TTS uses free `edge-tts` (Microsoft).
 
 ### 5. Docker for the most reproducible environment
 

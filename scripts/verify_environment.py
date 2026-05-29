@@ -109,18 +109,26 @@ def _check_google_credentials(settings: Settings) -> bool:
     )
 
 
-def _check_vertex_ai_settings(settings: Settings) -> bool:
+def _check_description_service_settings(settings: Settings) -> bool:
+    if settings.description_mode == "developer":
+        return _status(
+            True,
+            "Gemini Developer API",
+            "GEMINI_API_KEY is configured; Vertex AI project settings are optional",
+        )
+    if settings.description_mode == "vertex":
+        return _status(
+            True,
+            "Vertex AI Gemini",
+            f"project={settings.google_cloud_project}, location={settings.google_cloud_location}",
+        )
     if not settings.description_service_configured:
         _warn(
-            "Vertex AI Gemini",
-            "GOOGLE_CLOUD_PROJECT is not set; summaries and scene descriptions will use fallback mode",
+            "Gemini descriptions",
+            "Neither GEMINI_API_KEY nor GOOGLE_CLOUD_PROJECT is set; summaries and scene descriptions will use fallback mode",
         )
         return True
-    return _status(
-        True,
-        "Vertex AI Gemini",
-        f"project={settings.google_cloud_project}, location={settings.google_cloud_location}",
-    )
+    return True
 
 
 def _import_module(import_name: str) -> bool:
@@ -177,7 +185,7 @@ def main() -> int:
     ok = _check_command(ffmpeg_cmd) and ok
     ok = _check_command(ffprobe_cmd) and ok
     ok = _check_google_credentials(settings) and ok
-    ok = _check_vertex_ai_settings(settings) and ok
+    ok = _check_description_service_settings(settings) and ok
 
     if ok:
         print("[PASS] Environment verification completed successfully.")

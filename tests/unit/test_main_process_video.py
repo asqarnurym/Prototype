@@ -204,7 +204,7 @@ def test_process_video_keeps_requested_language_and_persists_detected_language(
     assert meta["requested_language"] == "en"
     assert meta["detected_language"] == "ru"
     assert meta["description_runtime"]["sdk"] == "google-genai"
-    assert meta["description_runtime"]["mode"] in {"vertex", "fallback"}
+    assert meta["description_runtime"]["mode"] in {"vertex", "developer", "fallback"}
     assert meta["tts_runtime"]["provider"] == settings.tts_provider
 
 
