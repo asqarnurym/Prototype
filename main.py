@@ -125,7 +125,7 @@ def process_video(
         scene_index = []
 
         if enable_visual and raw_visual_events:
-            logger.info("▶ Stage 2.2: Building scene index (Gemini Vertex AI)...")
+            logger.info("▶ Stage 2.2: Building scene index (Gemini descriptions)...")
             scene_index_path = str(out_dir / "scene_index.json")
             scene_index = build_scene_index(
                 raw_visual_events,

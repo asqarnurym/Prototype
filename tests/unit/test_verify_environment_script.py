@@ -36,6 +36,8 @@ def test_verify_environment_uses_runtime_settings_resolution(tmp_path, monkeypat
     monkeypatch.delenv("TTS_PROVIDER", raising=False)
     monkeypatch.delenv("FFMPEG_PATH", raising=False)
     monkeypatch.delenv("FFPROBE_PATH", raising=False)
+    monkeypatch.delenv("GOOGLE_CLOUD_PROJECT", raising=False)
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
 
     settings = module._load_runtime_settings(tmp_path)
     ffmpeg_cmd, ffprobe_cmd = module._resolve_ffmpeg_commands(settings)
@@ -46,6 +48,22 @@ def test_verify_environment_uses_runtime_settings_resolution(tmp_path, monkeypat
     assert settings.description_mode == "vertex"
     assert ffmpeg_cmd == str(ffmpeg_path.resolve())
     assert ffprobe_cmd == str(ffprobe_path.resolve())
+
+
+def test_verify_environment_reads_gemini_api_key_mode(tmp_path, monkeypatch):
+    module = _load_verify_environment_module()
+    importlib.import_module("core.config")
+
+    (tmp_path / ".env").write_text("GEMINI_API_KEY=test-api-key\nTTS_PROVIDER=edge\n")
+    monkeypatch.delenv("GOOGLE_CLOUD_PROJECT", raising=False)
+    monkeypatch.delenv("GOOGLE_APPLICATION_CREDENTIALS", raising=False)
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+
+    settings = module._load_runtime_settings(tmp_path)
+
+    assert settings.description_mode == "developer"
+    assert settings.description_runtime_info()["provider"] == "google_gemini_developer_api"
+    assert settings.tts_provider == "edge"
 
 
 def test_verify_environment_runtime_imports_do_not_include_python_multipart():

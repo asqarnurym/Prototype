@@ -93,9 +93,10 @@ class Settings(BaseSettings):
     min_scene_interval_sec: float = 5.0
     # Note: MAX_SCENES_PER_VIDEO limit removed — adaptive density
 
-    # ── Description service settings (Vertex AI Gemini) ────────────
+    # ── Description service settings (Gemini via Vertex AI or Developer API) ────────────
     google_cloud_project: str = ""
     google_cloud_location: str = "global"
+    gemini_api_key: str = ""
     description_model: str = Field(default="gemini-2.5-flash")
     max_description_length: int = 400
 
@@ -134,6 +135,15 @@ class Settings(BaseSettings):
     @field_validator("google_cloud_project", "google_cloud_location", mode="before")
     @classmethod
     def _normalize_google_cloud_value(cls, value):
+        if value is None:
+            return ""
+        if isinstance(value, str):
+            return value.strip()
+        return str(value)
+
+    @field_validator("gemini_api_key", mode="before")
+    @classmethod
+    def _normalize_gemini_api_key(cls, value):
         if value is None:
             return ""
         if isinstance(value, str):
@@ -216,6 +226,8 @@ class Settings(BaseSettings):
 
         if self.google_cloud_project:
             os.environ["GOOGLE_CLOUD_PROJECT"] = self.google_cloud_project
+        if self.gemini_api_key:
+            os.environ["GEMINI_API_KEY"] = self.gemini_api_key
 
         self.ffmpeg_path = self._resolve_tool_path(self.ffmpeg_path, "ffmpeg")
         self.ffprobe_path = self._resolve_tool_path(self.ffprobe_path, "ffprobe")
@@ -223,12 +235,24 @@ class Settings(BaseSettings):
         return self
 
     @property
-    def description_service_configured(self) -> bool:
+    def vertex_description_configured(self) -> bool:
         return bool(self.google_cloud_project and self.google_cloud_location)
 
     @property
+    def gemini_developer_configured(self) -> bool:
+        return bool(self.gemini_api_key)
+
+    @property
+    def description_service_configured(self) -> bool:
+        return self.description_mode != "fallback"
+
+    @property
     def description_mode(self) -> str:
-        return "vertex" if self.description_service_configured else "fallback"
+        if self.vertex_description_configured:
+            return "vertex"
+        if self.gemini_developer_configured:
+            return "developer"
+        return "fallback"
 
     def _service_account_info(self) -> dict[str, str | None]:
         creds_path = self.google_application_credentials
@@ -257,15 +281,35 @@ class Settings(BaseSettings):
         return info
 
     def description_runtime_info(self) -> dict[str, str | bool | None]:
-        auth = self._service_account_info()
+        mode = self.description_mode
+        if mode == "developer":
+            auth = {
+                "auth_mode": "api_key",
+                "credentials_file": None,
+                "service_account_email": None,
+                "service_account_project": None,
+            }
+            provider = "google_gemini_developer_api"
+            project = None
+            location = None
+        else:
+            auth = self._service_account_info()
+            provider = "google_vertex_ai" if mode == "vertex" else "fallback"
+            if mode == "vertex":
+                project = self.google_cloud_project or None
+                location = self.google_cloud_location or None
+            else:
+                project = None
+                location = None
+
         return {
             "enabled": self.description_service_configured,
-            "mode": self.description_mode,
-            "provider": "google_vertex_ai" if self.description_service_configured else "fallback",
+            "mode": mode,
+            "provider": provider,
             "sdk": "google-genai",
             "model": self.description_model,
-            "project": self.google_cloud_project or None,
-            "location": self.google_cloud_location or None,
+            "project": project,
+            "location": location,
             "auth_mode": auth["auth_mode"],
             "credentials_file": auth["credentials_file"],
             "service_account_email": auth["service_account_email"],
