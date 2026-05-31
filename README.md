@@ -59,7 +59,7 @@ ffmpeg -version
 py -3.12 -V
 ```
 
-The project is pinned to **Python 3.12.10**. The version is recorded in `.python-version`.
+The project is pinned to **Python 3.12.10** (see `.python-version`).
 
 ### 3. Install Python dependencies
 
@@ -238,8 +238,8 @@ Paper extension diagnostics are generated from the pinned paper run without new 
 .\.venv\Scripts\python.exe scripts\extract_scene_case_notes.py
 ```
 
-Outputs are written to `evaluation/paper_extensions/` and support the optional
-full manuscript variant in `academic_paper/main_full.tex`.
+Outputs are written to `evaluation/paper_extensions/` and support the
+full manuscript variant in `academic_paper/`.
 
 ---
 

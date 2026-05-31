@@ -1,5 +1,5 @@
 param(
-    [string]$TexEntry = "academic_paper/main_full.tex",
+    [string]$TexEntry = "academic_paper/main.tex",
     [int]$MaxPages = 8,
     [switch]$AllowOverPageLimit
 )

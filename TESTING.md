@@ -17,7 +17,7 @@ and paper-chart generation.
 | Resume specific run | `.venv\Scripts\python tests/evaluation/run_corpus_eval.py --resume-run run_003` |
 | Eval: Russian only | `.venv\Scripts\python tests/evaluation/run_corpus_eval.py --lang ru` |
 | Eval: short videos | `.venv\Scripts\python tests/evaluation/run_corpus_eval.py --duration short` |
-| Eval: specific videos | `.venv\Scripts\python tests/evaluation/run_corpus_eval.py --vids en_short_talk,ru_long_cr` |
+| Eval: specific videos | `.venv\Scripts\python tests/evaluation/run_corpus_eval.py --vids en_short_talking_head,ru_long_screencast` |
 | Seed corpus into DB | `.venv\Scripts\python scripts/seed_corpus.py` |
 | Regenerate charts | `.venv\Scripts\python scripts/generate_charts.py` |
 

@@ -500,5 +500,5 @@ Build manuscript variants with:
 
 ```powershell
 # Current full manuscript version
-powershell -ExecutionPolicy Bypass -File scripts\build_paper.ps1 -TexEntry academic_paper/main_full.tex -MaxPages 8
+powershell -ExecutionPolicy Bypass -File scripts\build_paper.ps1 -TexEntry academic_paper/main.tex -MaxPages 8
 ```
