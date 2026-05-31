@@ -35,22 +35,29 @@ BASELINE_PATH = None
 REPORT_PATH = None
 
 
-def _init_run_dir():
-    """Create the next run_XXX directory lazily and configure output paths."""
+def _init_run_dir(*, resume_run_name: str | None = None):
+    """Create the next run_XXX directory lazily and configure output paths.
+
+    If resume_run_name is given, reuse an existing directory in-place.
+    """
     global EVAL_DIR, METRICS_PATH, AGGREGATE_PATH, BASELINE_PATH, REPORT_PATH
 
     if EVAL_DIR is not None:
         return
 
-    existing_runs = [d for d in BASE_EVAL_DIR.iterdir() if d.is_dir() and d.name.startswith("run_")]
-    if not existing_runs:
-        next_id = 1
+    if resume_run_name:
+        EVAL_DIR = BASE_EVAL_DIR / resume_run_name
+        if not EVAL_DIR.is_dir():
+            raise FileNotFoundError(f"Run directory to resume not found: {EVAL_DIR}")
     else:
-        ids = [int(d.name.split("_")[1]) for d in existing_runs if d.name.split("_")[1].isdigit()]
-        next_id = max(ids) + 1 if ids else 1
-
-    EVAL_DIR = BASE_EVAL_DIR / f"run_{next_id:03d}"
-    EVAL_DIR.mkdir(parents=True, exist_ok=True)
+        existing_runs = [d for d in BASE_EVAL_DIR.iterdir() if d.is_dir() and d.name.startswith("run_")]
+        if not existing_runs:
+            next_id = 1
+        else:
+            ids = [int(d.name.split("_")[1]) for d in existing_runs if d.name.split("_")[1].isdigit()]
+            next_id = max(ids) + 1 if ids else 1
+        EVAL_DIR = BASE_EVAL_DIR / f"run_{next_id:03d}"
+        EVAL_DIR.mkdir(parents=True, exist_ok=True)
 
     METRICS_PATH = EVAL_DIR / "per_video_metrics.csv"
     AGGREGATE_PATH = EVAL_DIR / "aggregate_metrics.csv"
@@ -78,12 +85,19 @@ def job_is_complete(job_dir: Path, *, need_scenes: bool = False) -> bool:
     return all((job_dir / f).exists() for f in required)
 
 
-def read_existing_metrics() -> dict:
-    """Look for cached metrics in the latest existing run_XXX directory."""
+def read_existing_metrics(run_name: str | None = None) -> dict:
+    """Look for cached metrics.
+
+    If run_name is given (e.g. 'run_003'), read only from that specific run.
+    Otherwise, read from the latest existing run_XXX directory.
+    """
     existing_runs = sorted(
         [d for d in BASE_EVAL_DIR.iterdir() if d.is_dir() and d.name.startswith("run_")],
         key=lambda d: d.name,
     )
+    if run_name:
+        existing_runs = [d for d in existing_runs if d.name == run_name]
+
     for run_dir in reversed(existing_runs):
         metrics_file = run_dir / "per_video_metrics.csv"
         if metrics_file.exists():
@@ -146,12 +160,22 @@ def get_or_run_job_time(
     return elapsed
 
 
-def run_evaluation(limit: int | None = None):
+def run_evaluation(limit: int | None = None, *, force_new: bool = False, resume_run_name: str | None = None):
     if not MANIFEST_PATH.exists():
         print(f"Manifest not found: {MANIFEST_PATH}")
         return
 
-    existing_metrics = read_existing_metrics()
+    if resume_run_name and force_new:
+        print("[!] Cannot use --force-new and --resume-run together.")
+        return
+
+    _init_run_dir(resume_run_name=resume_run_name)
+
+    if force_new:
+        existing_metrics = {}
+        print("[*] --force-new: ignoring all cached metrics and artifacts.")
+    else:
+        existing_metrics = read_existing_metrics(run_name=resume_run_name)
 
     headers = [
         "vid_id",
@@ -563,5 +587,17 @@ if __name__ == "__main__":
         default=None,
         help="Evaluate only the first N manifest rows (useful for smoke checks).",
     )
+    parser.add_argument(
+        "--force-new",
+        action="store_true",
+        help="Ignore all cached metrics and B0/B1 artifacts — reprocess every video from scratch.",
+    )
+    parser.add_argument(
+        "--resume-run",
+        type=str,
+        default=None,
+        metavar="run_XXX",
+        help="Resume an incomplete run: fill missing videos in-place without creating a new run directory.",
+    )
     args = parser.parse_args()
-    run_evaluation(limit=args.limit)
+    run_evaluation(limit=args.limit, force_new=args.force_new, resume_run_name=args.resume_run)
