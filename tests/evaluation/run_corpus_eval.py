@@ -189,6 +189,7 @@ def run_evaluation(limit: int | None = None, *, force_new: bool = False,
         return
 
     # ── Resolve run directory ───────────────────────────────────
+    is_filtered = bool(lang or duration or content or vids)
     existing_runs = sorted(
         [d for d in BASE_EVAL_DIR.iterdir() if d.is_dir() and d.name.startswith("run_")],
         key=lambda d: d.name,
@@ -196,6 +197,9 @@ def run_evaluation(limit: int | None = None, *, force_new: bool = False,
 
     if force_new:
         target_run: str | None = None
+    elif is_filtered:
+        target_run = None
+        print("[*] Filter active — creating new run (partial evaluations always get a fresh run).")
     elif resume_run_name:
         target_run = resume_run_name
     elif existing_runs:
@@ -210,6 +214,9 @@ def run_evaluation(limit: int | None = None, *, force_new: bool = False,
     if force_new:
         existing_metrics = {}
         print("[*] --force-new: ignoring all cached metrics and artifacts.")
+    elif is_filtered:
+        existing_metrics = {}
+        print("[*] Filtered run: starting fresh (no cross-run cache reuse).")
     else:
         existing_metrics = read_existing_metrics(run_name=target_run)
 
@@ -219,6 +226,8 @@ def run_evaluation(limit: int | None = None, *, force_new: bool = False,
         "video_duration_sec", "b0_asr_sec", "b0_rtf", "b1_total_sec", "b1_rtf",
         "asr_confidence", "low_conf_ratio", "overlap_ratio",
         "scene_count", "scene_density_per_min", "tail_uncovered_sec", "coverage_15s_pct",
+        "avg_content_score", "has_screen_text_pct",
+        "avg_description_chars", "generic_description_pct",
     ]
 
     with open(MANIFEST_PATH, encoding="utf-8") as f:
@@ -342,6 +351,10 @@ def run_evaluation(limit: int | None = None, *, force_new: bool = False,
                 "scene_density_per_min": round(scene_density, 2),
                 "tail_uncovered_sec": round(tail, 2),
                 "coverage_15s_pct": round(scene_stats["coverage"]["within_15s_pct"], 2),
+                "avg_content_score": round(scene_stats["description_quality"]["avg_content_score"], 2),
+                "has_screen_text_pct": round(scene_stats["description_quality"]["quoted_text_pct"], 1),
+                "avg_description_chars": round(scene_stats["description_quality"]["avg_length_chars"], 1),
+                "generic_description_pct": round(scene_stats["description_quality"]["generic_description_pct"], 1),
             }
 
             output_rows.append(out_row)
@@ -398,6 +411,50 @@ def run_evaluation(limit: int | None = None, *, force_new: bool = False,
     aggregate_metrics()
     write_baseline_comparison()
     write_report_json()
+
+    # ── Write run metadata ──────────────────────────────────────
+    _write_run_meta(
+        is_filtered=bool(lang or duration or content or vids),
+        lang=lang, duration=duration, content=content, vids=vids,
+        limit=limit, force_new=force_new,
+        selected_count=len(manifest), processed_count=len(output_rows_sorted),
+    )
+
+
+def _write_run_meta(*, is_filtered: bool, lang: str | None, duration: str | None,
+                    content: str | None, vids: str | None, limit: int | None,
+                    force_new: bool, selected_count: int, processed_count: int) -> None:
+    """Write a machine-readable run_meta.json alongside the evaluation outputs."""
+    from datetime import UTC, datetime
+
+    active_filters: dict[str, str | int] = {}
+    if lang:
+        active_filters["lang"] = lang
+    if duration:
+        active_filters["duration"] = duration
+    if content:
+        active_filters["content"] = content
+    if vids:
+        active_filters["vids"] = vids.strip()
+    if limit:
+        active_filters["limit"] = limit
+
+    meta = {
+        "run_name": EVAL_DIR.name if EVAL_DIR else "unknown",
+        "created_at": datetime.now(UTC).isoformat(timespec="milliseconds").replace("+00:00", "Z"),
+        "full_run": not is_filtered and selected_count == 24,
+        "partial": is_filtered or (selected_count < 24),
+        "selected_videos": selected_count,
+        "processed_videos": processed_count,
+        "force_new": force_new,
+    }
+    if active_filters:
+        meta["filters"] = active_filters
+
+    meta_path = EVAL_DIR / "run_meta.json"
+    import json as _json
+    meta_path.write_text(_json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"Run metadata saved to {meta_path}")
 
 
 def aggregate_metrics():

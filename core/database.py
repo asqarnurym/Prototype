@@ -118,6 +118,13 @@ CREATE TABLE IF NOT EXISTS evaluation_metrics (
 );
 """
 
+_MIGRATIONS = [
+    "ALTER TABLE evaluation_metrics ADD COLUMN avg_content_score REAL",
+    "ALTER TABLE evaluation_metrics ADD COLUMN has_screen_text_pct REAL",
+    "ALTER TABLE evaluation_metrics ADD COLUMN avg_description_chars REAL",
+    "ALTER TABLE evaluation_metrics ADD COLUMN generic_description_pct REAL",
+]
+
 
 def _init_db() -> None:
     """Ensure the database file and schema exist (idempotent, thread-safe)."""
@@ -129,6 +136,12 @@ def _init_db() -> None:
         conn = sqlite3.connect(str(DB_PATH))
         try:
             conn.executescript(SCHEMA)
+            # Run idempotent migrations (skip if column already exists)
+            for migration in _MIGRATIONS:
+                try:
+                    conn.execute(migration)
+                except sqlite3.OperationalError:
+                    pass  # column already exists
             conn.commit()
         finally:
             conn.close()

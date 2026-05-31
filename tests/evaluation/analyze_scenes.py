@@ -98,6 +98,18 @@ def analyze(job_dir: str, save: bool = False) -> dict:
     # How many descriptions reference screen text (quoted)?
     has_quoted_text = sum(1 for d in descriptions if re.search(r'[«""][^»""]+?[»""]', d))
 
+    # Generic / filler descriptions (Gemini fallback or low-quality output)
+    generic_patterns = [
+        r"A new visual element is displayed",
+        r"На экране отображается новый визуальный",
+        r"The screen is completely black",
+        r"Экран полностью чёрный",
+    ]
+    generic_count = sum(
+        1 for d in descriptions
+        if any(re.search(p, d, re.IGNORECASE) for p in generic_patterns)
+    )
+
     # TTS cache status
     cached = sum(1 for s in scenes if s.get("tts_cached", False))
 
@@ -137,6 +149,7 @@ def analyze(job_dir: str, save: bool = False) -> dict:
             "has_quoted_screen_text": has_quoted_text,
             "quoted_text_pct": round(has_quoted_text / len(descriptions) * 100, 1),
             "avg_content_score": round(sum(content_scores) / len(content_scores), 2),
+            "generic_description_pct": round(generic_count / len(descriptions) * 100, 1),
         },
         "coverage": {
             "within_15s_pct": round(coverage_15s * 100, 1),
@@ -198,6 +211,7 @@ def analyze(job_dir: str, save: bool = False) -> dict:
         f"{len(scenes)} ({dq['quoted_text_pct']}%)"
     )
     print(f"  Content score:   {dq['avg_content_score']}/4 avg")
+    print(f"  Generic filler:  {dq['generic_description_pct']}% of descriptions")
     print()
 
     print("── Scene Coverage ──")
