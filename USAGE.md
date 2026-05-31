@@ -381,6 +381,102 @@ For conference-grade evaluation, keep the corpus manifest and run outputs in
 
 This produces versioned results under `evaluation/run_XXX/`.
 
+### Evaluation run modes
+
+The evaluation script supports three run modes and filtering:
+
+| Mode | Command | Behaviour |
+|------|---------|-----------|
+| **Resume latest** (default) | `run_corpus_eval.py` | Resumes the most recent `run_NNN`. Fills missing videos. Creates `run_001` if none exist. |
+| **Force new** | `--force-new` | Fresh `run_NNN`, ignores all cache and artifacts. |
+| **Resume specific** | `--resume-run run_003` | Fills gaps in a specific run (not necessarily the latest). |
+
+```bash
+# Default — resume latest, fill gaps
+python tests/evaluation/run_corpus_eval.py
+
+# Force a completely fresh evaluation
+python tests/evaluation/run_corpus_eval.py --force-new
+
+# Resume a specific incomplete run
+python tests/evaluation/run_corpus_eval.py --resume-run run_002
+```
+
+### Filter flags (combine with any run mode)
+
+Restrict evaluation to a subset of the corpus:
+
+```bash
+# Only Russian videos
+python tests/evaluation/run_corpus_eval.py --lang ru
+
+# Only short videos
+python tests/evaluation/run_corpus_eval.py --duration short
+
+# Only screencasts
+python tests/evaluation/run_corpus_eval.py --content screencast
+
+# Specific video IDs (comma-separated)
+python tests/evaluation/run_corpus_eval.py --vids en_short_talking_head,ru_long_screencast
+
+# Combined: English long videos only
+python tests/evaluation/run_corpus_eval.py --lang en --duration long
+
+# Smoke check: first 3 videos, force new run
+python tests/evaluation/run_corpus_eval.py --limit 3 --force-new
+```
+
+| Flag | Values | Description |
+|------|--------|-------------|
+| `--lang` | `en`, `ru` | Filter by language |
+| `--duration` | `short`, `medium`, `long` | Filter by duration bucket |
+| `--content` | `talking_head`, `slide-centric`, `screencast`, `practical_demo` | Filter by content type |
+| `--vids` | comma-separated IDs | Filter by specific video IDs |
+| `--limit` | integer | Process only first N videos |
+
+### Service smoke test
+
+Verify all three external services in a single pass before running evaluation:
+
+```bash
+python tests/evaluation/service_smoke.py
+```
+
+Expected output: `ALL PASSED` — confirms Whisper (CUDA + real transcription),
+Gemini 2.5 Flash (Vertex AI, no rate limits, real descriptions), and Google TTS
+(authentic audio synthesis, not edge-tts fallback).
+
+### SQLite database
+
+The project now uses SQLite (`data/prototype.db`) as the primary data store,
+with JSON/CSV files kept as a backwards-compatible replica:
+
+```bash
+# Seed the corpus into the database (one-time)
+python scripts/seed_corpus.py
+```
+
+**Analytics API endpoints:**
+
+```bash
+# List all evaluation runs
+curl http://localhost:8000/api/runs
+
+# Get per-video metrics for a run
+curl http://localhost:8000/api/metrics?run_id=1
+
+# Filter metrics by language
+curl http://localhost:8000/api/metrics?run_id=1&language=ru
+```
+
+**Corpus vs Upload separation:**
+
+| Aspect | Corpus | Upload |
+|--------|--------|--------|
+| File path | `input/{id}.mp4` | `input/_uploads/{job_id}/{filename}.mp4` |
+| SQLite source | `corpus` | `upload` |
+| Evaluation | Part of corpus runs | Separate, via `/jobs` API only |
+
 ### Paper extension diagnostics
 
 After selecting the paper evidence run in `evaluation/paper_charts_run.txt`, you

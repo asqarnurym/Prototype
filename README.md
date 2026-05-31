@@ -381,3 +381,42 @@ Current speech-alignment level:
 - **RAM**: minimum 8 GB
 - **Python**: 3.12.10
 - **OS**: Windows 10/11 for native setup, Docker for the most portable run
+
+---
+
+## Evaluation pipeline
+
+The project includes a bilingual corpus evaluation pipeline with SQLite-backed
+metrics, cache-aware reprocessing, and flexible filtering.
+
+**Quick commands:**
+
+```bash
+# Smoke-test all services (Whisper + Gemini + TTS)
+python tests/evaluation/service_smoke.py
+
+# Seed corpus into SQLite
+python scripts/seed_corpus.py
+
+# Run full evaluation (resumes latest run by default)
+python tests/evaluation/run_corpus_eval.py
+
+# Force fresh run
+python tests/evaluation/run_corpus_eval.py --force-new
+
+# Russian long videos only
+python tests/evaluation/run_corpus_eval.py --lang ru --duration long
+
+# Regenerate paper charts
+python scripts/generate_charts.py
+```
+
+**Analytics API:**
+
+```
+GET /api/runs                  — list all evaluation runs
+GET /api/metrics?run_id=1      — per-video metrics
+GET /api/metrics?run_id=1&lang=ru — filter by language
+```
+
+Full usage guide: [USAGE.md](USAGE.md) | Test documentation: [TESTING.md](TESTING.md)
