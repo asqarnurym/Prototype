@@ -108,7 +108,20 @@ def needs_recompute(existing: dict) -> bool:
     except ValueError:
         return True
 
-    return b0 <= 0 or b1 <= 0 or dur <= 0
+    if b0 <= 0 or b1 <= 0 or dur <= 0:
+        return True
+
+    # Verify artifacts actually exist on disk (not just cached metrics)
+    vid_id = existing.get("vid_id", "")
+    if vid_id:
+        b0_dir = PROJECT_ROOT / "output" / f"{vid_id}_B0"
+        b1_dir = PROJECT_ROOT / "output" / f"{vid_id}_B1"
+        if not job_is_complete(b0_dir, need_scenes=False):
+            return True
+        if not job_is_complete(b1_dir, need_scenes=True):
+            return True
+
+    return False
 
 
 def get_or_run_job_time(
@@ -167,6 +180,25 @@ def run_evaluation(limit: int | None = None):
 
     if limit is not None:
         manifest = manifest[:limit]
+
+    # ── Pre-run completeness audit ──────────────────────────────
+    incomplete_b0: list[str] = []
+    incomplete_b1: list[str] = []
+    for row in manifest:
+        vid_id = row["id"]
+        b0_dir = PROJECT_ROOT / "output" / f"{vid_id}_B0"
+        b1_dir = PROJECT_ROOT / "output" / f"{vid_id}_B1"
+        if not job_is_complete(b0_dir, need_scenes=False):
+            incomplete_b0.append(vid_id)
+        if not job_is_complete(b1_dir, need_scenes=True):
+            incomplete_b1.append(vid_id)
+    if incomplete_b0:
+        print(f"[*] {len(incomplete_b0)} videos need B0 (ASR-only) processing")
+    if incomplete_b1:
+        print(f"[*] {len(incomplete_b1)} videos need B1 (Full Pipeline) processing")
+    if not incomplete_b0 and not incomplete_b1:
+        print("[*] All 24 videos have complete B0 + B1 artifacts on disk")
+    # ─────────────────────────────────────────────────────────────
 
     manifest_ids = [row["id"] for row in manifest]
     if len(manifest_ids) != len(set(manifest_ids)):
