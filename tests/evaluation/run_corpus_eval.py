@@ -236,6 +236,9 @@ def run_evaluation(limit: int | None = None, *, force_new: bool = False,
     if len(manifest_ids) != len(set(manifest_ids)):
         raise ValueError("Duplicate ids found in evaluation/corpus_manifest.csv")
 
+    output_rows = []
+    skipped = []
+
     for row in manifest:
         vid_id = row["id"]
         existing = existing_metrics.get(vid_id)

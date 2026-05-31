@@ -60,6 +60,10 @@ def build_scene_index(
         for attempt in range(3):
             try:
                 description = generate_description(frame_path, language)
+                # Skip blank frames and empty/generic filter-level responses
+                if not description or not description.strip():
+                    logger.info(f"Сцена {i} пропущена [причина=blank_или_пустой_ответ time={event['event_time']:.1f}s]")
+                    return None
                 return {
                     "scene_id": i,
                     "time": event["event_time"],

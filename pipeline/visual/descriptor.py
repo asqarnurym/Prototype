@@ -11,10 +11,30 @@ Creates a brief description of the frame via the connected description service.
 
 import logging
 import threading
+import time
 
 from core.config import settings
 
 logger = logging.getLogger(__name__)
+
+# Retry policy for Vertex AI rate limits
+MAX_DESCRIPTION_RETRIES = 4
+INITIAL_BACKOFF_SEC = 2.0
+
+
+def _is_frame_blank(image_path: str, *, darkness_threshold: float = 0.95) -> bool:
+    """Return True if the frame is > `darkness_threshold` fraction black/dark pixels."""
+    try:
+        from PIL import Image
+
+        img = Image.open(image_path).convert("L")  # grayscale
+        pixels = list(img.getdata())
+        if not pixels:
+            return True
+        dark_count = sum(1 for p in pixels if p < 25)  # RGB < 25 → nearly black
+        return (dark_count / len(pixels)) > darkness_threshold
+    except Exception:
+        return False  # If we can't read the image, let the model decide
 
 
 def generate_description(
@@ -36,9 +56,14 @@ def generate_description(
     Returns:
         Frame description in natural language.
     """
+    # Skip near-black frames — they contribute no useful audio description
+    if _is_frame_blank(image_path):
+        logger.info("Scene description skipped [reason=blank_frame image=%s]", image_path)
+        return ""  # scene_indexer will filter out empty descriptions
+
     runtime = settings.description_runtime_info()
     if settings.description_service_configured:
-        return _describe_with_model(image_path, language)
+        return _describe_with_model_retry(image_path, language)
 
     # Fallback without API — minimal placeholder description
     logger.warning(
@@ -83,6 +108,41 @@ def _get_description_client():
                     http_options=types.HttpOptions(api_version="v1"),
                 )
     return _client
+
+
+def _describe_with_model_retry(image_path: str, language: str) -> str:
+    """Call _describe_with_model, retrying on rate-limit (429) with exponential backoff."""
+    last_exc = None
+    for attempt in range(MAX_DESCRIPTION_RETRIES):
+        try:
+            result = _describe_with_model(image_path, language)
+            # If the model returned a fallback description and it wasn't a real API error,
+            # it might have been an empty response — still worth retrying once
+            if result in (_describe_fallback("en"), _describe_fallback("ru")):
+                if attempt < 1:  # one retry for empty/filler responses
+                    time.sleep(INITIAL_BACKOFF_SEC)
+                    continue
+            return result
+        except Exception as exc:
+            last_exc = exc
+            _, status_code = _classify_model_error(exc)
+            if status_code == 429 and attempt < MAX_DESCRIPTION_RETRIES - 1:
+                wait = INITIAL_BACKOFF_SEC * (2 ** attempt)
+                logger.warning(
+                    "Rate-limited (429) on attempt %d/%d, retrying in %.1fs [image=%s]",
+                    attempt + 1, MAX_DESCRIPTION_RETRIES, wait, image_path,
+                )
+                time.sleep(wait)
+            else:
+                raise
+
+    # All retries exhausted
+    runtime = settings.description_runtime_info()
+    logger.error(
+        "Scene description fallback [reason=retries_exhausted provider=%s model=%s image=%s]: %s",
+        runtime["provider"], runtime["model"], image_path, last_exc,
+    )
+    return _describe_fallback(language)
 
 
 def _describe_with_model(
@@ -214,6 +274,8 @@ Your description must:
 3. Explain what is being demonstrated visually (body position, diagram layout, graph trends).
 4. Mention important visual annotations (arrows, highlights, colored markers, warning symbols).
 5. Sound natural to hear out loud as short audio description, with smooth phrasing and concrete nouns/verbs.
+6. NEVER use generic phrases like "A new visual element", "The screen displays content", or "On-screen graphics".
+7. If the frame looks nearly identical to a typical talking-head shot, describe the person's expression, gesture, clothing, or background instead — never repeat a generic description.
 
 Avoid vague filler, broad generic statements, and repeated openings such as "This frame shows" or "The image shows".
 Write 2-4 clear sentences, up to {settings.max_description_length} characters.
