@@ -303,6 +303,23 @@ def run_evaluation(limit: int | None = None):
         writer.writeheader()
         writer.writerows(output_rows_sorted)
 
+    # ── Mirror metrics to SQLite ──────────────────────────────────
+    try:
+        from core.database import create_evaluation_run, upsert_evaluation_metric
+
+        run_name = EVAL_DIR.name if EVAL_DIR else "run_auto"
+        try:
+            run_id = create_evaluation_run(run_name, total_videos=len(manifest))
+        except Exception:
+            run_id = None
+
+        if run_id:
+            for row in output_rows_sorted:
+                upsert_evaluation_metric(run_id=run_id, video_id=row["vid_id"], **row)
+            print(f"  [db] Mirrored {len(output_rows_sorted)} metrics to SQLite (run_id={run_id})")
+    except Exception as exc:
+        print(f"  [db] SQLite mirror skipped: {exc}")
+
     if skipped:
         print(f"\n[!] Skipped {len(skipped)} videos: {', '.join(skipped)}")
         print(f"[*] Metrics saved for {len(output_rows_sorted)}/{len(manifest)} videos.")

@@ -29,6 +29,13 @@ from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel, ConfigDict, Field
 
 from core.config import settings
+from core.database import (
+    ensure_video,
+    get_evaluation_metrics,
+    get_scene as db_get_scene,
+    get_scenes as db_get_scenes,
+    list_evaluation_runs,
+)
 from core.job_state import (
     JOB_STATUS_COMPLETED,
     JOB_STATUS_FAILED,
@@ -36,10 +43,13 @@ from core.job_state import (
     JOB_STATUS_QUEUED,
     build_job_artifacts,
     create_job_id,
+    create_job_dual,
     infer_job_status,
     read_job_meta,
+    update_job_dual,
     update_job_meta,
     update_json_file,
+    upsert_artifact_dual,
     utc_now_iso,
 )
 from core.logging_config import setup_logging
@@ -231,6 +241,13 @@ def _queue_process_job(
     job_id = create_job_id(video.stem)
     job_dir = _job_dir(job_id)
     output_dir = str(job_dir)
+
+    # Mirror to SQLite — ensure video row exists first
+    video_stem = video.stem if video.stem else video.name
+    ensure_video(video_stem, source="upload" if "_uploads" in str(video) else "corpus",
+                 filename=video.name, file_path=str(video.resolve()))
+    create_job_dual(job_id, video_stem, config="B1" if enable_visual else "B0", language=language)
+
     update_job_meta(
         job_dir,
         **_build_queued_job_meta(
@@ -407,9 +424,8 @@ def _build_queued_job_meta(
 
 
 def _finalize_successful_job(job_dir: Path, result: dict) -> None:
-    # Use the on-disk artifact map as the single source of truth so CLI/API/meta
-    # expose the same optional files when they actually exist.
     artifacts = build_job_artifacts(job_dir)
+    job_id = job_dir.name
     update_job_meta(
         job_dir,
         status=JOB_STATUS_COMPLETED,
@@ -419,9 +435,13 @@ def _finalize_successful_job(job_dir: Path, result: dict) -> None:
         error_type=None,
         error_message=None,
     )
+    update_job_dual(job_id, status=JOB_STATUS_COMPLETED, completed_at=utc_now_iso(), processing_time_sec=result.get("processing_time_sec"))
+    for atype, apath in artifacts.items():
+        upsert_artifact_dual(job_id, atype, apath)
 
 
 def _finalize_failed_job(job_dir: Path, exc: Exception, elapsed: float | None) -> None:
+    job_id = job_dir.name
     update_job_meta(
         job_dir,
         status=JOB_STATUS_FAILED,
@@ -431,6 +451,7 @@ def _finalize_failed_job(job_dir: Path, exc: Exception, elapsed: float | None) -
         error_type=exc.__class__.__name__,
         error_message=str(exc),
     )
+    update_job_dual(job_id, status=JOB_STATUS_FAILED, error_type=exc.__class__.__name__, error_message=str(exc))
 
 
 def _run_process_job(
@@ -936,6 +957,30 @@ async def get_words(job_id: str):
         "segments": grouped,
         "total_words": len(words),
     }
+
+
+# ── Metrics & evaluation endpoints ────────────────────────────────
+
+
+@app.get("/api/metrics")
+async def get_metrics(run_id: int | None = None, language: str | None = None):
+    """Return per-video metrics for a given evaluation run."""
+    if run_id is None:
+        runs = list_evaluation_runs()
+        if not runs:
+            return {"metrics": [], "message": "no evaluation runs found"}
+        run_id = runs[0]["id"]
+
+    rows = get_evaluation_metrics(run_id)
+    if language:
+        rows = [r for r in rows if r.get("language") == language]
+    return {"run_id": run_id, "metrics": rows}
+
+
+@app.get("/api/runs")
+async def get_runs():
+    """List all evaluation runs."""
+    return {"runs": list_evaluation_runs()}
 
 
 # ── Web UI endpoints ──────────────────────────────────────────────

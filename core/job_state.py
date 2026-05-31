@@ -11,6 +11,10 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from core.database import create_job as _db_create_job
+from core.database import update_job as _db_update_job
+from core.database import upsert_artifact as _db_upsert_artifact
+
 JOB_STATUS_QUEUED = "queued"
 JOB_STATUS_PROCESSING = "processing"
 JOB_STATUS_COMPLETED = "completed"
@@ -161,3 +165,23 @@ def infer_job_status(job_dir: Path, meta: dict[str, Any] | None = None) -> str:
     if meta.get("error_message"):
         return JOB_STATUS_FAILED
     return JOB_STATUS_PROCESSING if job_dir.exists() else JOB_STATUS_FAILED
+
+
+# ---------------------------------------------------------------------------
+# Dual-write helpers (JSON file + SQLite mirror)
+# ---------------------------------------------------------------------------
+
+
+def create_job_dual(job_id: str, video_id: str, *, config: str = "B1", language: str = "en") -> None:
+    """Persist job creation in both SQLite and (implicitly) via future update_job_meta."""
+    _db_create_job(job_id, video_id, config=config, language=language)
+
+
+def update_job_dual(job_id: str, **fields: Any) -> None:
+    """Mirror a job state update into the SQLite database."""
+    _db_update_job(job_id, **fields)
+
+
+def upsert_artifact_dual(job_id: str, artifact_type: str, file_path: str) -> None:
+    """Mirror an artifact path into SQLite."""
+    _db_upsert_artifact(job_id, artifact_type, file_path)

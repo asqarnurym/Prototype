@@ -108,6 +108,27 @@ def load_metrics(run_dir: Path) -> pd.DataFrame:
     return pd.read_csv(run_dir / "per_video_metrics.csv")
 
 
+def load_metrics_from_db(run_name: str) -> pd.DataFrame | None:
+    """Load per-video metrics from SQLite (optional fallback)."""
+    try:
+        from core.database import get_evaluation_metrics, list_evaluation_runs
+
+        runs = list_evaluation_runs()
+        run_id = None
+        for r in runs:
+            if r["run_name"] == run_name:
+                run_id = r["id"]
+                break
+        if not run_id:
+            return None
+        rows = get_evaluation_metrics(run_id)
+        if not rows:
+            return None
+        return pd.DataFrame(rows)
+    except Exception:
+        return None
+
+
 def save_rtf_comparison_chart(df: pd.DataFrame, figures_dir: Path) -> Path:
     """Render the real-time factor comparison chart."""
     fig, ax = plt.subplots(figsize=(5.2, 3.9))

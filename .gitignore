@@ -88,5 +88,15 @@ template/*.pdf
 Thumbs.db
 .DS_Store
 
+# SQLite database
+data/
+
+# Downloaded binaries
+ffmpeg/
+
 # Old local agent/audit residue
 .omx/
+
+# Frontend build artefacts
+frontend/
+node_modules/
