@@ -160,7 +160,26 @@ def get_or_run_job_time(
     return elapsed
 
 
-def run_evaluation(limit: int | None = None, *, force_new: bool = False, resume_run_name: str | None = None):
+def _filter_manifest(manifest: list[dict], *, lang: str | None, duration: str | None,
+                     content: str | None, vids: str | None) -> list[dict]:
+    """Filter manifest rows by criteria. None means no filter on that dimension."""
+    result = manifest
+    if lang:
+        result = [r for r in result if r.get("language") == lang]
+    if duration:
+        result = [r for r in result if r.get("duration_bucket") == duration]
+    if content:
+        result = [r for r in result if r.get("content_type") == content]
+    if vids:
+        ids = {v.strip() for v in vids.split(",") if v.strip()}
+        result = [r for r in result if r["id"] in ids]
+    return result
+
+
+def run_evaluation(limit: int | None = None, *, force_new: bool = False,
+                   resume_run_name: str | None = None,
+                   lang: str | None = None, duration: str | None = None,
+                   content: str | None = None, vids: str | None = None):
     if not MANIFEST_PATH.exists():
         print(f"Manifest not found: {MANIFEST_PATH}")
         return
@@ -169,60 +188,49 @@ def run_evaluation(limit: int | None = None, *, force_new: bool = False, resume_
         print("[!] Cannot use --force-new and --resume-run together.")
         return
 
-    _init_run_dir(resume_run_name=resume_run_name)
+    # ── Resolve run directory ───────────────────────────────────
+    existing_runs = sorted(
+        [d for d in BASE_EVAL_DIR.iterdir() if d.is_dir() and d.name.startswith("run_")],
+        key=lambda d: d.name,
+    )
+
+    if force_new:
+        target_run: str | None = None
+    elif resume_run_name:
+        target_run = resume_run_name
+    elif existing_runs:
+        target_run = existing_runs[-1].name
+        print(f"[*] Default: resuming latest run — {target_run}")
+    else:
+        target_run = None  # create first run
+        print("[*] No previous runs — creating run_001")
+
+    _init_run_dir(resume_run_name=target_run)
 
     if force_new:
         existing_metrics = {}
         print("[*] --force-new: ignoring all cached metrics and artifacts.")
     else:
-        existing_metrics = read_existing_metrics(run_name=resume_run_name)
+        existing_metrics = read_existing_metrics(run_name=target_run)
 
+    # ── Load & filter manifest ──────────────────────────────────
     headers = [
-        "vid_id",
-        "language",
-        "duration_bucket",
-        "content_type",
-        "video_duration_sec",
-        "b0_asr_sec",
-        "b0_rtf",
-        "b1_total_sec",
-        "b1_rtf",
-        "asr_confidence",
-        "low_conf_ratio",
-        "overlap_ratio",
-        "scene_count",
-        "scene_density_per_min",
-        "tail_uncovered_sec",
-        "coverage_15s_pct",
+        "vid_id", "language", "duration_bucket", "content_type",
+        "video_duration_sec", "b0_asr_sec", "b0_rtf", "b1_total_sec", "b1_rtf",
+        "asr_confidence", "low_conf_ratio", "overlap_ratio",
+        "scene_count", "scene_density_per_min", "tail_uncovered_sec", "coverage_15s_pct",
     ]
-
-    output_rows = []
-    skipped = []
 
     with open(MANIFEST_PATH, encoding="utf-8") as f:
         manifest = list(csv.DictReader(f))
 
+    if lang or duration or content or vids:
+        before = len(manifest)
+        manifest = _filter_manifest(manifest, lang=lang, duration=duration, content=content, vids=vids)
+        print(f"[*] Filter applied: {len(manifest)}/{before} videos selected")
+
     if limit is not None:
         manifest = manifest[:limit]
-
-    # ── Pre-run completeness audit ──────────────────────────────
-    incomplete_b0: list[str] = []
-    incomplete_b1: list[str] = []
-    for row in manifest:
-        vid_id = row["id"]
-        b0_dir = PROJECT_ROOT / "output" / f"{vid_id}_B0"
-        b1_dir = PROJECT_ROOT / "output" / f"{vid_id}_B1"
-        if not job_is_complete(b0_dir, need_scenes=False):
-            incomplete_b0.append(vid_id)
-        if not job_is_complete(b1_dir, need_scenes=True):
-            incomplete_b1.append(vid_id)
-    if incomplete_b0:
-        print(f"[*] {len(incomplete_b0)} videos need B0 (ASR-only) processing")
-    if incomplete_b1:
-        print(f"[*] {len(incomplete_b1)} videos need B1 (Full Pipeline) processing")
-    if not incomplete_b0 and not incomplete_b1:
-        print("[*] All 24 videos have complete B0 + B1 artifacts on disk")
-    # ─────────────────────────────────────────────────────────────
 
     manifest_ids = [row["id"] for row in manifest]
     if len(manifest_ids) != len(set(manifest_ids)):
@@ -582,22 +590,41 @@ if __name__ == "__main__":
         description="Run corpus evaluation over the bilingual manifest"
     )
     parser.add_argument(
-        "--limit",
-        type=int,
-        default=None,
+        "--limit", type=int, default=None,
         help="Evaluate only the first N manifest rows (useful for smoke checks).",
     )
     parser.add_argument(
-        "--force-new",
-        action="store_true",
-        help="Ignore all cached metrics and B0/B1 artifacts — reprocess every video from scratch.",
+        "--force-new", action="store_true",
+        help="Ignore all cached metrics and artifacts — reprocess every selected video into a new run_XXX.",
     )
     parser.add_argument(
-        "--resume-run",
-        type=str,
-        default=None,
-        metavar="run_XXX",
-        help="Resume an incomplete run: fill missing videos in-place without creating a new run directory.",
+        "--resume-run", type=str, default=None, metavar="run_XXX",
+        help="Resume a specific incomplete run in-place (instead of the default: latest run).",
+    )
+    parser.add_argument(
+        "--lang", type=str, default=None, choices=["en", "ru"],
+        help="Filter: process only videos in this language.",
+    )
+    parser.add_argument(
+        "--duration", type=str, default=None, choices=["short", "medium", "long"],
+        help="Filter: process only videos in this duration bucket.",
+    )
+    parser.add_argument(
+        "--content", type=str, default=None,
+        choices=["talking_head", "slide-centric", "screencast", "practical_demo"],
+        help="Filter: process only videos of this content type.",
+    )
+    parser.add_argument(
+        "--vids", type=str, default=None,
+        help="Filter: comma-separated video ids (e.g. 'en_short_talking_head,ru_long_screencast').",
     )
     args = parser.parse_args()
-    run_evaluation(limit=args.limit, force_new=args.force_new, resume_run_name=args.resume_run)
+    run_evaluation(
+        limit=args.limit,
+        force_new=args.force_new,
+        resume_run_name=args.resume_run,
+        lang=args.lang,
+        duration=args.duration,
+        content=args.content,
+        vids=args.vids,
+    )
