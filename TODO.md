@@ -55,6 +55,37 @@ the *topic* matters more than the *visual*.
 enrich the scene with a `spoken_context` field. On-demand TTS can then
 prepend "Speaker is discussing X while..." before the visual description.
 
+### 6. Rate-limit exhaust latency accumulation
+**Problem:** v1.1 added exponential backoff (2s→4s→8s→16s, max 4 retries).
+For a 24-video corpus with ~50 scenes each, worst-case retry exhaust could
+add (2+4+8+16) × 50 × 24 = 36,000s = 10 hours of pure retry wait time.
+**Risk:** This makes B1 pipeline latency non-deterministic and environment-dependent.
+**Mitigation:** Monitor retry rate per-run via `run_meta.json`. If >5% of
+descriptions trigger retries, flag the run as degraded. For v2, consider:
+(a) per-location quota pre-check before batch processing,
+(b) adaptive concurrency (reduce workers on first 429),
+(c) multi-region fallback (try us-central1 → europe-west4 → asia-southeast1).
+
+### 7. Optimal Vertex AI location for Kazakhstan (Astana)
+**Status:** Probed 2026-05-31 via `tests/evaluation/location_probe.py`.
+**Results** (gemini-2.5-flash, 5 measured requests per location):
+
+| Location | Median | Min | Max | OK/Fail | Notes |
+|----------|--------|-----|-----|---------|-------|
+| `europe-west1` (Belgium) | **423ms** | 407ms | 463ms | 7/8 | **RECOMMENDED** |
+| `europe-west4` (Netherlands) | 460ms | 358ms | 473ms | 8/8 | Most reliable (0 failures), good fallback |
+| `us-east4` (Virginia) | 600ms | 571ms | 859ms | 8/8 | Higher latency |
+| `asia-southeast1` (Singapore) | 792ms | 792ms | 792ms | 4/8 | Quota exhaustion |
+| `asia-northeast1` (Tokyo) | — | — | — | 0/8 | 429 RESOURCE_EXHAUSTED |
+| `us-central1` (Iowa) | — | — | — | 0/8 | 429 RESOURCE_EXHAUSTED |
+
+**Decision:** `GOOGLE_CLOUD_LOCATION=europe-west1` applied in `.env`.
+**Rationale:** Lowest median latency (423ms) with acceptable reliability.
+`europe-west4` is the backup if quota becomes an issue on europe-west1.
+**Note:** `us-central1` was rate-limited — likely because `global` was
+routing there and our evaluation runs exhausted its quota. This explains
+the 429 errors seen during earlier runs.
+
 ---
 
 ## Candidate Ideas
