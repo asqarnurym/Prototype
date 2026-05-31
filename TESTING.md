@@ -1,310 +1,287 @@
-# Testing
+# Testing & Evaluation
 
-This guide explains how to run tests, collect metrics, and generate
-reports for the Prototype system. The reports produce JSON files and
-terminal output you can reference in your paper.
+This guide covers the full Prototype testing and evaluation workflow:
+developer tests, service smoke checks, SQLite-backed evaluation pipeline,
+and paper-chart generation.
 
-## Developer Tests (Atomic/Unit/Integration)
+---
 
-For code correctness, regression testing, and API contract verification, use the `pytest` suite. These tests are safe to run via `pytest tests` and do not require heavy GPU models or external service calls.
+## Quick Reference
 
-### Run all developer tests
+| Task | Command |
+|------|---------|
+| Run all dev tests | `.venv\Scripts\python -m pytest tests/unit tests/integration -q` |
+| Smoke-test services | `.venv\Scripts\python tests/evaluation/service_smoke.py` |
+| Full corpus eval | `.venv\Scripts\python tests/evaluation/run_corpus_eval.py` |
+| Force new run | `.venv\Scripts\python tests/evaluation/run_corpus_eval.py --force-new` |
+| Resume specific run | `.venv\Scripts\python tests/evaluation/run_corpus_eval.py --resume-run run_003` |
+| Eval: Russian only | `.venv\Scripts\python tests/evaluation/run_corpus_eval.py --lang ru` |
+| Eval: short videos | `.venv\Scripts\python tests/evaluation/run_corpus_eval.py --duration short` |
+| Eval: specific videos | `.venv\Scripts\python tests/evaluation/run_corpus_eval.py --vids en_short_talk,ru_long_cr` |
+| Seed corpus into DB | `.venv\Scripts\python scripts/seed_corpus.py` |
+| Regenerate charts | `.venv\Scripts\python scripts/generate_charts.py` |
+
+---
+
+## Database (SQLite)
+
+### Architecture
+
+The system uses a hybrid persistence model: **SQLite is the primary store**,
+with **JSON/CSV files kept as a read-compatible replica**.
+
+```
+                        ┌──────────────┐
+                        │   SQLite DB   │ ◄── primary write target
+                        │ data/proto.db │
+                        └──────┬───────┘
+                               │ mirror on write
+              ┌────────────────┼────────────────┐
+              ▼                ▼                ▼
+       job_meta.json    per_video.csv    evaluation_report.json
+```
+
+### Schema (7 tables)
+
+| Table | Purpose |
+|-------|---------|
+| `videos` | Corpus + uploaded videos. `source` column: `"corpus"` or `"upload"`. |
+| `jobs` | Processing jobs. FK → `videos(id)`. Tracked: status, timing, errors. |
+| `artifacts` | Paths to generated files (subtitles, timeline, scene_index, summary). |
+| `scenes` | Indexed scene descriptions with quality metrics (content_score, has_screen_text). |
+| `tts_cache` | Language-scoped TTS audio paths. FK → `scenes(id)`. |
+| `evaluation_runs` | Evaluation run metadata (run_name, total_videos, timestamps). |
+| `evaluation_metrics` | Per-video metrics. FK → `evaluation_runs(id)`. Supports `ON CONFLICT ... UPDATE`. |
+
+### API endpoints
+
+```
+GET  /api/runs                       list all evaluation runs
+GET  /api/metrics?run_id=N           per-video metrics for run N
+GET  /api/metrics?run_id=N&lang=ru  filter by language
+```
+
+### Dual-write guarantee
+
+Every `process_video` call (via API or CLI) writes **simultaneously**:
+1. `job_meta.json` in `output/{job_id}/` (legacy, for reference)
+2. `jobs` + `artifacts` + `scenes` rows in SQLite (primary)
+
+`run_corpus_eval.py` mirrors per-video metrics into `evaluation_metrics`
+alongside the CSV output.
+
+---
+
+## Service Smoke Test
+
+`tests/evaluation/service_smoke.py` verifies all three external services
+in a single, quick pass (~30 seconds). Run it whenever you change
+credentials, environment, or model versions.
 
 ```bash
-# Make sure virtual environment is active
-.venv\Scripts\python -m pytest tests/unit tests/integration
+.venv\Scripts\python tests/evaluation/service_smoke.py
 ```
 
-### Test structure
+**What it checks:**
 
-- `tests/unit/` — Independent component tests (logic, exporters, etc.).
-- `tests/integration/` — FastAPI endpoint tests using `TestClient`.
+| Service | Checks |
+|---------|--------|
+| **Whisper** | CUDA device, compute type, model size, transcription output (segments + words), word confidence ≥ 0.5, response time |
+| **Gemini 2.5 Flash** | Vertex AI mode, project/location configured, no `429 RESOURCE_EXHAUSTED`, description is not a fallback/placeholder, length ≥ 20 chars, response ≤ 30s |
+| **Google TTS** | Provider is `google`, output file exists, file size > 0, audio duration > 0 (both reported and probed) |
 
-These tests ensure that:
+All three must pass before evaluating the corpus — otherwise your metrics
+will be invalid (fallback descriptions, wrong TTS provider, CPU fallback).
 
-- ✅ **API contracts** match the OpenAPI schema.
-- ✅ **Artifact formats** are consistent across the pipeline.
-- ✅ **Edge cases** (like external video paths or ID mismatches) are handled.
-- ✅ **Logic** (like word grouping) is numerically correct.
+---
 
-## Test scripts overview
+## Corpus Evaluation (`run_corpus_eval.py`)
 
-All evaluation scripts are in the `tests/evaluation/` folder:
+### Run modes
 
-| Script                 | What it measures                        | Output file             |
-| ---------------------- | --------------------------------------- | ----------------------- |
-| `analyze_alignment.py` | Word timestamp accuracy, confidence     | `alignment_report.json` |
-| `analyze_pipeline.py`  | Per-stage timing breakdown              | `pipeline_report.json`  |
-| `analyze_scenes.py`    | Scene detection and description quality | `scenes_report.json`    |
-| `analyze_api.py`       | API endpoint latency                    | `api_report.json`       |
+| Mode | Trigger | Behaviour |
+|------|---------|-----------|
+| **Resume latest** (default) | `run_corpus_eval.py` | Resumes the most recent `run_NNN` in-place. Fills missing videos only. Creates `run_001` if no runs exist. |
+| **Force new** | `--force-new` | Creates a fresh `run_NNN`. Ignores ALL cached metrics and artifacts. Reprocesses every selected video. |
+| **Resume specific** | `--resume-run run_003` | Resumes a specific run in-place. Use when you need to fill gaps in a run that isn't the latest. |
 
-Manual probes and benchmarks in the same folder are intentionally kept out
-of pytest discovery:
+### Filter flags (combine with any mode)
 
-- `hf_probe*.py` — ad-hoc Hugging Face dataset inspection
-- `benchmark_tts_latency.py` — live TTS latency benchmark
-- `pipeline_output_smoke.py` — real end-to-end pipeline smoke script
+| Flag | Example | Effect |
+|------|---------|--------|
+| `--lang en` | Only English | Filters corpus_manifest.csv |
+| `--duration short` | Short videos only | `short` / `medium` / `long` |
+| `--content screencast` | Screencasts only | `talking_head` / `slide-centric` / `screencast` / `practical_demo` |
+| `--vids a,b,c` | Specific videos | Comma-separated video IDs |
+| Combined | `--lang ru --duration long` | Russian + long = 4 videos |
 
-## Paper pre-submission checks (non-pytest)
+### Cache validation
 
-These checks target manuscript readiness, not application runtime behavior.
+Before processing, the script audits all selected videos:
 
-### Sanity scan for manuscript leakage
-
-```bash
-python scripts/paper_sanity_check.py --paper-dir academic_paper
+```
+[*] 3 videos need B0 (ASR-only) processing
+[*] 5 videos need B1 (Full Pipeline) processing
 ```
 
-This script scans `.tex` sources for publication-risk markers such as:
+A video is considered **cached** only when:
+- `output/{vid_id}_B0/job_meta.json` exists with `processing_time_sec > 0`
+- `output/{vid_id}_B0/` contains `subtitles.vtt` + `timeline.json`
+- For B1: also `scene_index.json`
+- `per_video_metrics.csv` row has valid positive values for all RTF/duration fields
 
-- local paths and localhost URLs
-- internal run/job IDs and repo paths
-- draft markers (`TODO`, `TBD`, `FIXME`)
-- placeholder citations
-- log-style/internal runtime phrasing
+If you delete `output/` but keep `evaluation/run_*/`, the script will
+**detect the mismatch** and re-process those videos.
 
-### Reproducible PDF build guard
+### Output files
 
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/build_paper.ps1
 ```
-
-This runs `pdflatex -> bibtex -> pdflatex -> pdflatex`, checks page count,
-and fails when undefined citations/references remain in the final log.
-
-### One-command preflight
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/pre_submission_check.ps1
-```
-
-This executes both the sanity scan and the PDF build checks.
-
-### Paper extension diagnostics
-
-These scripts regenerate the post-hoc scene-selection ablation and qualitative
-case notes from saved B1 artifacts. They should not call hosted models or TTS.
-
-```bash
-python scripts/analyze_scene_selection_ablation.py
-python scripts/extract_scene_case_notes.py
-```
-
-Expected outputs:
-
-- `evaluation/paper_extensions/scene_selection_ablation_summary.csv`
-- `evaluation/paper_extensions/scene_selection_ablation_per_video.csv`
-- `evaluation/paper_extensions/qualitative_scene_cases.csv`
-- `evaluation/paper_extensions/qualitative_scene_cases.md`
-
-Run lint on the paper helper scripts:
-
-```bash
-ruff check scripts/analyze_scene_selection_ablation.py scripts/extract_scene_case_notes.py
+evaluation/run_NNN/
+├── per_video_metrics.csv        # 1 row per video, 16 columns
+├── aggregate_metrics.csv        # BY LANGUAGE / BY DURATION / OVERALL
+├── baseline_comparison.csv       # B0 vs B1 per scope
+└── evaluation_report.json       # Machine-readable paper summary
 ```
 
 ---
 
-## Step 1: process a video
+## Paper Reproduction
 
-Before running any analysis, you need at least one processed job.
+### Restoring original metrics
 
-```bash
-python main.py --video ./input/test.mp4 --language en
-```
-
-Note the output directory (for example `output/test_1770867214`). You
-will pass this path to the analysis scripts.
-
-## Step 2: word alignment analysis
-
-This script evaluates how accurately faster-whisper placed timestamps
-on each word.
+The paper's original evaluation data lives in `evaluation/run_001/`.
+It was committed as evidence artifacts and can always be restored:
 
 ```bash
-python tests/evaluation/analyze_alignment.py output/test_1770867214 --save
+git checkout f2eb859 -- evaluation/run_001
 ```
 
-**What it reports:**
-
-- Total words and segments transcribed
-- Audio coverage (what percentage of audio has word timestamps)
-- Word duration statistics (average, median, min, max)
-- Confidence scores and their distribution
-- Inter-word gaps and any timestamp overlaps
-- List of low-confidence words (probability below 0.5)
-
-**How to use in your paper:**
-
-- The confidence distribution goes in the Results section to show ASR
-  reliability
-- Zero overlaps means timestamps are consistent (no timing conflicts)
-- The low-confidence word list helps discuss limitations (proper nouns,
-  brand names, and uncommon words tend to score lower)
-
-## Step 3: pipeline performance
-
-This script runs the full pipeline from scratch and measures each
-stage individually.
+### Regenerating charts
 
 ```bash
-python tests/evaluation/analyze_pipeline.py ./input/test.mp4
+.venv\Scripts\python scripts/generate_charts.py
 ```
 
-> This re-processes the video (takes a few minutes). It creates a new
-> job in `output/` with a `pipeline_report.json` file.
+Charts are saved to `figures/`:
+- `fig_rtf_comparison.png` — B0 vs B1 RTF boxplots by content type
+- `fig_coverage.png` — 15s scene coverage bar chart
 
-**What it reports:**
-
-- Per-stage timing: audio extraction, ASR, phoneme alignment, scene
-  detection, description-service calls, export
-- Percentage breakdown (which stage takes the most time)
-- Realtime ratio (how many times slower than realtime the processing
-  is)
-- Hardware configuration (GPU vs CPU, model size, compute type)
-- Scene filtering statistics (raw count vs filtered count)
-
-**How to use in your paper:**
-
-- The timing breakdown goes in Results as a table or bar chart
-- Compare GPU vs CPU by running the script with each configuration
-  (set `WHISPER_DEVICE` in `.env` or the shell environment)
-- The realtime ratio shows practical viability (for example: "the system
-  processes a 2-minute video in 45 seconds on GPU")
-
-## Step 4: scene analysis
-
-This script evaluates the quality of scene detection and scene
-descriptions without re-processing the video.
+The script reads the run pointed to by `evaluation/paper_charts_run.txt`
+(`run_001` for the published paper). To use a different run:
 
 ```bash
-python tests/evaluation/analyze_scenes.py output/test_1770867214 --save
+echo run_002 > evaluation/paper_charts_run.txt
 ```
 
-**What it reports:**
+### Running paper extensions
 
-- Scene count and temporal distribution
-- Description length and word count statistics
-- Content quality score (does the description reference screen text,
-  use descriptive verbs, mention visual elements)
-- Timeline visualization (shows scene distribution across the video)
-- Coverage metric: what percentage of the video is within 15 seconds
-  of an indexed scene
-
-**How to use in your paper:**
-
-- The timeline visualization shows scene distribution visually
-- The "quoted screen text" percentage shows how often the description service
-  successfully reads text from slides (relevant for educational video
-  accessibility)
-- Coverage percentage demonstrates that a user can press "describe"
-  at almost any point and get a relevant description
-
-## Step 5: API latency
-
-This script tests all REST API endpoints and measures response time.
-
-Start the server first, then run the test:
+Post-hoc ablation and qualitative case studies (no API calls):
 
 ```bash
-# Terminal 1: start the server
-uvicorn api.server:app --port 8000
-
-# Terminal 2: run the test
-python tests/evaluation/analyze_api.py --save
+.venv\Scripts\python scripts/analyze_scene_selection_ablation.py
+.venv\Scripts\python scripts/extract_scene_case_notes.py
 ```
 
-You can also specify a particular job:
-
-```bash
-python tests/evaluation/analyze_api.py --job test_1770867214 --save
-```
-
-**What it reports:**
-
-- Response time for each endpoint (health, jobs, scenes, describe,
-  TTS audio, subtitles, video, web UI)
-- Cold vs cached TTS latency (first request generates audio, second
-  returns from cache)
-- Pass/fail status for each endpoint
-- Overall latency summary (average, min, max)
-
-**How to use in your paper:**
-
-- The cold vs cached TTS comparison demonstrates the caching strategy
-- Overall latency shows the on-demand response time a user experiences
-- Use the pass/fail count to state system reliability
+Outputs go to `evaluation/paper_extensions/`.
 
 ---
 
-## Comparing GPU vs CPU performance
+## Test Structure
 
-To get both data points for your paper, run the pipeline benchmark
-twice.
-
-**GPU run** (default if CUDA is detected):
-
-```bash
-python tests/evaluation/analyze_pipeline.py ./input/test.mp4
 ```
-
-**CPU run** (set overrides in `.env` or the shell temporarily):
-
-```env
-WHISPER_DEVICE=cpu
-WHISPER_COMPUTE_TYPE=int8
+tests/
+├── unit/
+│   ├── test_config.py              # pydantic-settings validation
+│   ├── test_database.py            # SQLite schema + CRUD (18 tests)
+│   ├── test_descriptor.py          # Gemini prompt construction
+│   ├── test_eval_modes.py          # Run modes + filter logic (26 tests)
+│   ├── test_export_openapi_script.py
+│   ├── test_exporters.py           # VTT, JSON, timeline
+│   ├── test_generate_charts_script.py
+│   ├── test_main_process_video.py
+│   ├── test_summary.py
+│   ├── test_verify_environment_script.py
+│   └── test_word_grouper.py
+├── integration/
+│   ├── test_api.py                 # FastAPI TestClient
+│   └── test_database_api.py        # SQLite-backed endpoints (11 tests)
+└── evaluation/
+    ├── _bootstrap.py               # Path helper
+    ├── run_corpus_eval.py          # Main evaluation driver
+    ├── service_smoke.py            # Whisper + Gemini + TTS verification
+    ├── analyze_alignment.py
+    ├── analyze_api.py
+    ├── analyze_pipeline.py
+    ├── analyze_scenes.py
+    ├── benchmark_tts_latency.py
+    ├── extract_stage_latencies.py
+    ├── hf_probe*.py
+    └── pipeline_output_smoke.py
 ```
-
-Then run the benchmark again with those overrides active:
-
-```bash
-python tests/evaluation/analyze_pipeline.py ./input/test.mp4
-```
-
-Remove or unset those overrides after testing to restore auto-detection.
 
 ---
 
-## Running all tests at once
+## Typical Workflow
 
-Process a video and run all analysis scripts in sequence:
+### 1. Verify environment
 
 ```bash
-python main.py --video ./input/test.mp4 --language en
-
-# Find the job directory (most recent)
-# Then run all analyses:
-python tests/evaluation/analyze_alignment.py output/YOUR_JOB_ID --save
-python tests/evaluation/analyze_scenes.py output/YOUR_JOB_ID --save
-
-# For API tests, start the server first:
-uvicorn api.server:app --port 8000
-# In another terminal:
-python tests/evaluation/analyze_api.py --job YOUR_JOB_ID --save
+.venv\Scripts\python scripts/verify_environment.py --profile dev
 ```
 
-After running all scripts, your job folder contains:
+### 2. Seed the database
 
-```text
-output/YOUR_JOB_ID/
-├── subtitles.vtt
-├── timeline.json
-├── scene_index.json
-├── alignment_report.json    <-- word alignment metrics
-├── scenes_report.json       <-- scene quality metrics
-├── api_report.json          <-- API latency metrics
-└── tts_cache/               <-- generated TTS audio files
+```bash
+.venv\Scripts\python scripts/seed_corpus.py
 ```
 
-## Where each report helps in a paper
+### 3. Smoke-test services
 
-| Paper section | Report to reference                                         |
-| ------------- | ----------------------------------------------------------- |
-| Methodology   | `pipeline_report.json` (system configuration, stages)       |
-| Methodology   | `alignment_report.json` (how ASR quality is measured)       |
-| Results       | `pipeline_report.json` (timing breakdown, GPU vs CPU)       |
-| Results       | `alignment_report.json` (confidence distribution, accuracy) |
-| Results       | `scenes_report.json` (scene coverage, description quality)  |
-| Results       | `api_report.json` (response latency, cold vs cached)        |
-| Discussion    | `alignment_report.json` (low-confidence words, limitations) |
-| Discussion    | `scenes_report.json` (content score, coverage gaps)         |
+```bash
+.venv\Scripts\python tests/evaluation/service_smoke.py
+```
+
+### 4. Run developer tests
+
+```bash
+.venv\Scripts\python -m pytest tests/unit tests/integration -q
+```
+
+### 5. Evaluate the corpus
+
+```bash
+# First run (creates run_001)
+.venv\Scripts\python tests/evaluation/run_corpus_eval.py
+
+# Later: fill gaps in the latest run
+.venv\Scripts\python tests/evaluation/run_corpus_eval.py
+
+# Force a completely fresh run
+.venv\Scripts\python tests/evaluation/run_corpus_eval.py --force-new
+
+# Only Russian long videos, resume latest
+.venv\Scripts\python tests/evaluation/run_corpus_eval.py --lang ru --duration long
+```
+
+### 6. Generate paper artifacts
+
+```bash
+.venv\Scripts\python scripts/generate_charts.py
+.venv\Scripts\python scripts/analyze_scene_selection_ablation.py
+.venv\Scripts\python scripts/extract_scene_case_notes.py
+```
+
+---
+
+## Corpus vs Upload Video Separation
+
+| Aspect | Corpus | Upload |
+|--------|--------|--------|
+| **File location** | `input/{id}.mp4` | `input/_uploads/{job_id}/{filename}.mp4` |
+| **SQLite `source`** | `corpus` | `upload` |
+| **Job ID format** | `{vid_id}_B0` / `{vid_id}_B1` | `{filename}_{timestamp}_{uuid}` |
+| **Evaluation** | Included in corpus runs | Not part of corpus evaluation |
+| **API listing** | Appears in `/jobs` | Appears in `/jobs` |
+
+Uploaded videos are tracked in SQLite with `source='upload'` and preserved
+across API sessions. They do not interfere with corpus evaluation runs.
