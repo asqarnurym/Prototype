@@ -75,7 +75,8 @@ def build_scene_index(
     import concurrent.futures
 
     scene_index = []
-    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+    max_workers = 1  # Descriptor uses global rate limiter — parallelism adds no value
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = []
         stagger_s = 0.5  # inter-request delay to avoid bursting AFC quota
         for idx, item in enumerate(enumerate(filtered)):

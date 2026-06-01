@@ -21,6 +21,15 @@ logger = logging.getLogger(__name__)
 MAX_DESCRIPTION_RETRIES = 4
 INITIAL_BACKOFF_SEC = 2.0
 
+# ── Global rate limiter — serialises Gemini API calls to stay under AFC limit ──
+#    AFC (Adaptive Frequency Control) allows max 10 remote calls.
+#    We serialise to 1 concurrent call with 1.5s inter-call spacing.
+#    This eliminates 429 RESOURCE_EXHAUSTED errors at the cost of throughput.
+_RATE_LIMIT_SEMAPHORE = threading.Semaphore(1)
+_RATE_LIMIT_INTER_CALL_SEC = 1.5
+_last_api_call_ts: float = 0.0
+_last_call_lock = threading.Lock()
+
 
 def _is_frame_blank(image_path: str, *, darkness_threshold: float = 0.95) -> bool:
     """Return True if the frame is > `darkness_threshold` fraction black/dark pixels."""
@@ -157,20 +166,29 @@ def _describe_with_model(
 
     Uses the connected SDK of the description provider.
     """
+    global _last_api_call_ts
+
     runtime = settings.description_runtime_info()
     try:
         from PIL import Image
 
-        client = _get_description_client()
+        # ── Rate-limited entry ──────────────────────────────────
+        with _RATE_LIMIT_SEMAPHORE:
+            with _last_call_lock:
+                elapsed_since_last = time.monotonic() - _last_api_call_ts
+                if elapsed_since_last < _RATE_LIMIT_INTER_CALL_SEC:
+                    time.sleep(_RATE_LIMIT_INTER_CALL_SEC - elapsed_since_last)
+                _last_api_call_ts = time.monotonic()
 
-        img = Image.open(image_path)
-
-        prompt = _build_description_prompt(language)
-        response = client.models.generate_content(
-            model=settings.description_model,
-            contents=[img, prompt],
-            config=_build_description_generation_config(),
-        )
+            client = _get_description_client()
+            img = Image.open(image_path)
+            prompt = _build_description_prompt(language)
+            response = client.models.generate_content(
+                model=settings.description_model,
+                contents=[img, prompt],
+                config=_build_description_generation_config(),
+            )
+        # ──────────────────────────────────────────────────────────
 
         # response.text can be None (safety filter, empty response)
         if response.text is None:
