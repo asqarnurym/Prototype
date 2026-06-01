@@ -49,47 +49,44 @@ def build_scene_index(
         runtime["model"],
         runtime["project"],
         runtime["location"],
-        5,
+        2,
     )
 
     # 2. Параллельная генерация описаний через Gemini
+    #    2 workers to stay under AFC limit (max 10 remote calls).
+    #    Retry logic lives in descriptor.py (exponential backoff on 429).
+    #    Inter-request stagger via throttled executor.
     def process_single_scene(index_tuple):
         i, event = index_tuple
         frame_path = event["frame_path"]
-        # Добавляем простую логику повторных попыток для Gemini API (до 3 попыток с задержкой)
-        for attempt in range(3):
-            try:
-                description = generate_description(frame_path, language)
-                # Skip blank frames and empty/generic filter-level responses
-                if not description or not description.strip():
-                    logger.info(f"Сцена {i} пропущена [причина=blank_или_пустой_ответ time={event['event_time']:.1f}s]")
-                    return None
-                return {
-                    "scene_id": i,
-                    "time": event["event_time"],
-                    "frame_path": str(frame_path),
-                    "description": description,
-                    "tts_cached": False,
-                    "tts_path": None,
-                }
-            except Exception as e:
-                if attempt < 2:
-                    sleep_time = 2**attempt
-                    logger.warning(
-                        f"Ошибка Gemini на сцене {i} (попытка {attempt + 1}/3), ждем {sleep_time}с: {e}"
-                    )
-                    time.sleep(sleep_time)
-                else:
-                    logger.error(f"Ошибка Gemini на сцене {i} (исчерпаны попытки): {e}")
-                    return None
+        description = generate_description(frame_path, language)
+        if not description or not description.strip():
+            logger.info(f"Сцена {i} пропущена [причина=blank_или_пустой_ответ time={event['event_time']:.1f}s]")
+            return None
+        return {
+            "scene_id": i,
+            "time": event["event_time"],
+            "frame_path": str(frame_path),
+            "description": description,
+            "tts_cached": False,
+            "tts_path": None,
+        }
+
+    import concurrent.futures
 
     scene_index = []
-    # Используем 5 потоков для API (баланс между скоростью и rate limits)
-    with ThreadPoolExecutor(max_workers=5) as executor:
-        results = list(executor.map(process_single_scene, enumerate(filtered)))
-
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+        futures = []
+        stagger_s = 0.5  # inter-request delay to avoid bursting AFC quota
+        for idx, item in enumerate(enumerate(filtered)):
+            futures.append(executor.submit(process_single_scene, item))
+            if idx > 0 and idx % 3 == 0:
+                time.sleep(stagger_s)  # brief pause every 3 submissions
+        for future in concurrent.futures.as_completed(futures):
+            result = future.result()
+            if result is not None:
+                scene_index.append(result)
     # Отсеиваем неудачные запросы и восстанавливаем порядок
-    scene_index = [r for r in results if r is not None]
     scene_index.sort(key=lambda s: s["time"])
 
     # Переприсваиваем ID после фильтрации ошибок (опционально)
