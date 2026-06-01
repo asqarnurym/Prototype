@@ -183,12 +183,12 @@ async function loadJobs() {
   } catch(e) {}
 }
 
-sel.onchange = async () => {
-  const id = document.getElementById('jobSelect').value;
+document.getElementById('jobSelect').onchange = async function() {
+  const id = this.value;
   if (!id) return currentJobId = null;
   currentJobId = id;
   document.getElementById('videoPlayer').src = `/jobs/${id}/video`;
-  document.getElementById('langBadge').textContent = (await api(`/jobs/${id}/meta`)).language||'--';
+  try { document.getElementById('langBadge').textContent = (await api(`/jobs/${id}/meta`)).language||'--'; } catch(e) {}
   loadWords();
   loadSummary();
 };
