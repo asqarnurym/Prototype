@@ -67,6 +67,7 @@ uvicorn-qa.log
 dist/
 build/
 backups/
+.tmp/
 academic_paper/Paper-output/
 academic_paper/Edit.txt
 academic_paper/*backup*.md
@@ -76,6 +77,8 @@ academic_paper/*.blg
 academic_paper/*.log
 selected_articles_conference/*.pdf
 template/*.pdf
+academic_paper/rewrite_workspace/backups/
+academic_paper/rewrite_workspace/rewrite_build.*
 *.synctex.gz
 *.aux
 *.fdb_latexmk
