@@ -20,34 +20,28 @@
 
 \title{Design of a Multimodal Pipeline for Accessibility in E-Learning Content}
 
-\author{\IEEEauthorblockN{1\textsuperscript{st} Askar Nurym}
+\author{\IEEEauthorblockN{1\textsuperscript{st} Askar Nurym, 2\textsuperscript{nd} Zhukabayeva T. K.}
 \IEEEauthorblockA{\textit{School of Software Engineering} \\
 \textit{Astana IT University}\\
 Astana, Kazakhstan \\
-255453@astanait.edu.kz}
-\and
-\IEEEauthorblockN{2\textsuperscript{nd} Tamara K. Zhukabayeva}
-\IEEEauthorblockA{\textit{School of Software Engineering} \\
-\textit{Astana IT University}\\
-Astana, Kazakhstan \\
-t.zhukabayeva@astanait.edu.kz}
+255453@astanait.edu.kz, t.zhukabayeva@astanait.edu.kz}
 }
 
 \maketitle
 
 \begin{abstract}
-The online learning format and educational videos are now deeply integrated into higher education and professional learning, but many platforms still leave captions, navigation and access to visual context as separate or incomplete features. This paper presents a prototype multimodal pipeline for processing source video into reusable artifacts: word-aligned captions, scene-indexed visual descriptions, summaries and chapter markers. The prototype player exposes keyboard-first controls, ARIA semantics, configurable text presentation and word-level highlighting, but these are treated as design affordances rather than proof of user-level benefit. A bilingual corpus evaluation was conducted on 24 instructional videos (12 English, 12 Russian; 3.29 h total) using an ASR-only baseline (B0) and full multimodal configuration (B1). B1 stayed below RTF=1.0 for every video, with mean RTF=0.433 and median RTF=0.424, compared with B0 mean RTF=0.193. ASR confidence is reported only as an internal diagnostic (mean 0.942). The 91.7\% 15-second scene coverage result describes temporal proximity to scene anchors, not description quality or accessibility impact. Results support prototype-stage engineering feasibility under resource and hosted-service constraints, while WER/CER, qualitative description evaluation and user studies remain future work.
+The online learning format and educational videos are now deeply integrated into higher education and professional learning, but many platforms still leave captions, navigation and access to visual context as separate or incomplete features. This paper presents a prototype multimodal pipeline for processing source video into reusable artifacts: word-aligned captions, scene-indexed visual descriptions, summaries and chapter markers. The prototype player exposes keyboard-first controls, Accessible Rich Internet Applications (ARIA) semantics, configurable text presentation and word-level highlighting, but these are treated as design affordances rather than proof of user-level benefit. A bilingual corpus evaluation was conducted on 24 instructional videos (12 English, 12 Russian; 3.29 h total) using an automatic speech recognition (ASR)-only baseline (B0) and full multimodal configuration (B1). B1 stayed below real-time factor (RTF)=1.0 for every video, with mean RTF=0.433 and median RTF=0.424, compared with B0 mean RTF=0.193. ASR confidence is reported only as an internal diagnostic (mean 0.942). The 91.7\% 15-second scene coverage result describes temporal proximity to scene anchors, not description quality or accessibility impact. Results support prototype-stage engineering feasibility under resource and hosted-service constraints, while reference-based transcription error rates, qualitative description evaluation and user studies remain future work.
 
 \end{abstract}
 
 \begin{IEEEkeywords}
-Accessibility, e-learning, educational video, multimodal pipeline, automatic speech recognition, captions, audio description, cognitive load.
+accessibility; e-learning; educational video; multimodal pipeline; automatic speech recognition; captioning; audio description; cognitive load
 \end{IEEEkeywords}
 
 \section{Introduction}
 In higher education and professional growth, the video-centric format of education became dominant, but despite that, pre-recorded lessons and screen-captured records remain unfairly accessible across student groups. Studies show that captions, playback control, and navigational structure advance accessibility and support learning in video-based education environments \cite{Gernsbacher2015,Mayer2020,Horlin2024}. This prototype therefore, targets synchronized captions, scene-linked descriptions, and structured navigation within a single playback workflow.
 
-Existing practice often treats these needs as separate product features. To solve that problem, the proposed work frames accessibility as an end-to-end pipeline problem: one processing flow should produce synchronized artifacts that can be reused by the playback layer and downstream tools. This framing is especially relevant under constrained deployment settings that have compute and API quotas. Implementation complexity is a practical limitation. Prior work on automatic adaptation of open educational resources (OER) proposes a methodology for improving accessibility of existing educational content through AI-supported adaptation and accessibility metadata for search and reuse \cite{IngavelezGuerra2022}.
+Existing practice often treats these needs as separate product features. To solve that problem, the proposed work frames accessibility as an end-to-end pipeline problem: one processing flow should produce synchronized artifacts that can be reused by the playback layer and downstream tools. This framing is especially relevant under constrained deployment settings that have compute and application programming interface (API) quotas. Implementation complexity is a practical limitation. Prior work on automatic adaptation of open educational resources (OER) proposes a methodology for improving accessibility of existing educational content through AI-supported adaptation and accessibility metadata for search and reuse \cite{IngavelezGuerra2022}.
 
 The research question is: Can a resource-constrained multimodal pipeline generate reusable accessibility-oriented artifacts for educational video with practical processing latency?
 
@@ -55,7 +49,7 @@ Contributions of research:
 \begin{enumerate}
 \item Implementation of a unified multimodal pipeline that simultaneously generates captions with word-level alignment and scene-indexed visual descriptions and structured summary.
 \item Development of adaptive scene indexing that ensures complete coverage of content even with little difference between scenes, without predefining a fixed number of scenes.
-\item Design of a system with an efficient on-demand scene audio-description mechanism, caching to reduce latency in case of repetitive local playbacks after the first request, support of accessibility for people with ADHD and dyslexia through fonts and captioning features.
+\item Design of a system with an efficient on-demand scene audio-description mechanism, caching to reduce latency in case of repetitive local playbacks after the first request, support of accessibility for people with attention deficit hyperactivity disorder (ADHD) and dyslexia through fonts and captioning features.
 \item Benchmarking on a balanced and normalized set of 24 educational videos in English and Russian languages.
 \end{enumerate}
 
@@ -66,17 +60,17 @@ Caption benefits are not limited to impaired individuals; observations in the la
 \subsection{Cognitive Load and Neurodiversity in Video Learning}
 Instructional video effectiveness is defined by factors like pacing, signaling and learner control. Challenges related to media quality in online video lectures, including pace and speech intelligibility, directly affect the learning process \cite{Lange2020}. Measuring cognitive load of students during educational videos is dependent on context and difficult to reflect by a single metric \cite{Kruger2016}, and recent neurodiversity-focused researches highlight challenges related to transcription errors and limited playback/navigation control can create additional barriers for neurodivergent learners \cite{LeCunff2024,Horlin2024}. \textbf{Gap:} literatures motivates control and structure as learning supports, but it does not address how such supports can be generated automatically as reusable artifacts from raw educational video in a single processing pass.
 
-\subsection{ASR and Timestamping Foundations}
-Modern ASR systems have accomplished practical utility through deep-learning pipelines \cite{Malik2020} and large-scale weakly supervised models such as Whisper \cite{Radford2022}. Augmented methods such as WhisperX and CrisperWhisper target timestamp precision through forced alignment and attention-based refinement \cite{Bain2023,Wagner2024}. In the current prototype, ASR and timestamping mainly serve the caption artifact layer: they provide synchronized text that the player and downstream pipeline layers can reuse.
+\subsection{Automatic Speech Recognition and Timestamping}
+Modern automatic speech recognition (ASR) systems have accomplished practical utility through deep-learning pipelines \cite{Malik2020} and large-scale weakly supervised models such as Whisper \cite{Radford2022}. Augmented methods such as WhisperX and CrisperWhisper target timestamp precision through forced alignment and attention-based refinement \cite{Bain2023,Wagner2024}. In the current prototype, ASR and timestamping mainly serve the caption artifact layer: they provide synchronized text that the player and downstream pipeline layers can reuse.
 
 \subsection{Visual Accessibility and Audio Description}
 Prior work on scene-description authoring offers quality evaluation of descriptions by descriptiveness, objectivity, succinctness, sufficiency, accuracy, referability, and clarity \cite{Natalie2021}. In this prototype, scene-linked descriptions are exposed as optional on-demand spoken output within the same processing pipeline rather than pre-rendered into the source media. The focus of the present study is systems integration and timing behavior, not a user-study evaluation of description quality.
 
 \section{System Design}
 \subsection{Pipeline Architecture and Artifacts}
-The proposed system follows a \emph{Hybrid Multimodal Architecture}, which calls multimodal remote LLM for cognitively intensive tasks while utilizing deterministic algorithms for high-throughput media processing. To enhance performance on consumer-grade hardware, the acoustic (ASR) and visual (scene detection) branches execute concurrently. Given an input video, the system emits three artifact groups:
+The proposed system follows a \emph{Hybrid Multimodal Architecture}, which calls a remote multimodal large language model (LLM) for cognitively intensive tasks while utilizing deterministic algorithms for high-throughput media processing. To enhance performance on consumer-grade hardware, the acoustic (ASR) and visual (scene detection) branches execute concurrently. Given an input video, the system emits three artifact groups:
 \begin{itemize}
-\item \textbf{Subtitle artifacts} $A_{sub}$: word-level timestamps, segment timeline, and WebVTT export.
+\item \textbf{Subtitle artifacts} $A_{sub}$: word-level timestamps, segment timeline, and Web Video Text Tracks (WebVTT) export.
 \item \textbf{Scene artifacts} $A_{scene}$: time-indexed visual scenes with text-aware natural-language descriptions.
 \item \textbf{Structure artifacts} $A_{sum}$: summary points and chapter markers derived from scene descriptions.
 \end{itemize}
@@ -93,7 +87,7 @@ To implement karaoke highlighting we used a midpoint-based word grouper, which i
 
 Native HTML5 \texttt{<track>} elements do not fully satisfy the requirements selected for prototype player features such as granular, stateful word-by-word highlighting, including current, previous and upcoming states, and for this reason, we have implemented a custom web player subtitle renderer with user customizable font and contrast settings.
 
-Audio description is played via on-demand mechanism reflected in Algorithm~\ref{alg:ad}: Player looks for the nearest indexed scene within 30 second threshold, then returns cached audio or calls TTS function to synthesize speech from stored description and caches audio for later usage, then pauses the generated audio description and resumes original video playback.
+Audio description is played via on-demand mechanism reflected in Algorithm~\ref{alg:ad}: Player looks for the nearest indexed scene within 30 second threshold, then returns cached audio or calls a text-to-speech (TTS) function to synthesize speech from stored description and caches audio for later usage, then pauses the generated audio description and resumes original video playback.
 
 \begin{algorithm}[!t]
 \caption{On-Demand Audio Description Resolution}
@@ -128,16 +122,16 @@ Audio description is played via on-demand mechanism reflected in Algorithm~\ref{
 \subsection{Prototype Configuration}
 Prototype implementation is currently focused on Russian and English languages support and instantiates the architecture described in Fig.~\ref{fig:architecture} with the following components:
 \begin{enumerate}
-\item \textbf{Transcribing:} system utilizes Whisper model optimized for \texttt{int8\_float16} compute type \cite{Radford2022}. This provides a balance between transcription accuracy and RTF.
+\item \textbf{Transcribing:} system utilizes Whisper model optimized for \texttt{int8\_float16} compute type \cite{Radford2022}. This provides a balance between transcription accuracy and real-time factor (RTF).
 \item \textbf{Visual Semantic Extraction:} Visual transitions are detected via an algorithm utilizing PySceneDetect library with pre-determined pixel difference threshold \cite{PySceneDetect}. In the next step, we utilize hosted \texttt{gemini-2.5-flash} multimodal model \cite{GeminiTeam2025} to generate a semantic description that encapsulates both textual and structural visual data from each identified scene.
 \item \textbf{Adaptive Scene Indexing:} Because heuristic detection occasionally falls short on visually static content such as screencasts, we handle these low-variance scenarios by falling back to \emph{Adaptive Uniform Sampling}. This guarantees a baseline density of at least two descriptions per minute.
 \end{enumerate}
 
 \section{Technical Evaluation}
-\subsection{Experimental Design and Corpus Benchmark}
+\subsection{Experimental Design and Corpus}
 We evaluated the pipeline using a \emph{Bilingual Multimodal Corpus Benchmark} containing 24 educational videos (total duration of 197.61 minutes), 12 of which are in English, the other half is in Russian. For both languages we selected educational videos of various durations (short - 21.18 min, medium - 51.71 min, long - 124.73 min) and types of content (talking-head, slide-centric, screencast, and practical demo).
 
-The videos were assembled from mixed educational sources and further normalized to 1280$\times$720 at 30 FPS. The manifest preserves neither detailed source provenance nor license metadata, so the corpus should be treated as an internal engineering benchmark. Processing was conducted on a local workstation (AMD Ryzen 9 5900HX, NVIDIA RTX 3050 Notebook, 16 GB of RAM) to establish a baseline for consumer-grade deployability.
+The videos were assembled from mixed educational sources and further normalized to 1280$\times$720 at 30 frames per second (FPS). The manifest preserves neither detailed source provenance nor license metadata, so the corpus should be treated as an internal engineering benchmark. Processing was conducted on a local workstation (AMD Ryzen 9 5900HX, NVIDIA RTX 3050 Notebook, 16 GB of RAM) to establish a baseline for consumer-grade deployability.
 
 \begin{table}[t]
 \caption{Corpus Composition}
@@ -184,7 +178,7 @@ Pipeline mode & On-demand audio description \\
 \end{tabular}
 \end{table}
 
-\subsection{Formal Metrics}
+\subsection{Evaluation Metrics}
 The study reports engineering proxy metrics, not direct measures of improved learning or accessibility effectiveness:
 \begin{equation}
 \text{low\_conf\_ratio} = \frac{w_{<0.5}}{w_{\text{all}}}
@@ -197,7 +191,7 @@ The study reports engineering proxy metrics, not direct measures of improved lea
 \end{equation}
 where RTF $< 1$ means preprocessing faster than the video duration.
 
-For implementation, the denominators for both RTF and coverage are derived from the same effective video span: the end time of the generated timeline for each video. Thus, $T_{\text{video}}$ denotes the scalar duration used for RTF, while $s_{\text{video}}$ denotes the length of the evaluated timeline span used for coverage. This keeps B0/B1 denominators consistent for each video. In this definition, $T_{\text{processing}}$ includes pre-playback processing stages only; RTF is therefore interpreted as batch preprocessing throughput rather than end-to-end playback latency. ASR confidence is an internal diagnostic of Whisper model. Since no manual transcription accuracy checks, such as WER and CER, were conducted, the metrics should not be interpreted as proof of transcription accuracy.
+For implementation, the denominators for both RTF and coverage are derived from the same effective video span: the end time of the generated timeline for each video. Thus, $T_{\text{video}}$ denotes the scalar duration used for RTF, while $s_{\text{video}}$ denotes the length of the evaluated timeline span used for coverage. This keeps B0/B1 denominators consistent for each video. In this definition, $T_{\text{processing}}$ includes pre-playback processing stages only; RTF is therefore interpreted as batch preprocessing throughput rather than end-to-end playback latency. ASR confidence is an internal diagnostic of Whisper model. Since no manual transcription accuracy checks, such as word error rate (WER) and character error rate (CER), were conducted, the metrics should not be interpreted as proof of transcription accuracy.
 
 The metric $\text{coverage}_{15s}$ shows the proportion of evaluated video span covered by at least 1 scene anchor within a radius of 15 seconds. The 15-second radius was selected as half of the 30-second uniform grid used in the post hoc ablation. This metric does not indicate whether the generated description is sufficient or useful.
 
@@ -213,12 +207,12 @@ Additional diagnostics characterize alignment stability and visual indexing beha
 \end{equation}
 where $n_{\text{overlap}}$ is the number of overlapping adjacent word timestamps, and $t_{\text{last\_scene}}$ is the timestamp of the final indexed scene.
 
-\subsection{Automation and Reproducibility Protocol}
-All runs are conducted via a single driver script, which reads the corpus manifest and processes every video consecutively in B0 and B1 configurations; for single video processing, it applies a multithreaded pipeline scheme to reduce the total runtime. The driver saves pipeline output artifacts and computes summaries and metrics in machine-readable format, including baseline comparisons and a JSON report for further analysis. Tables and figures in this paper that are related to metrics are based on the 24-video corpus.
+\subsection{Automation and Reproducibility}
+All runs are conducted via a single driver script, which reads the corpus manifest and processes every video consecutively in B0 and B1 configurations; for single video processing, it applies a multithreaded pipeline scheme to reduce the total runtime. The driver saves pipeline output artifacts and computes summaries and metrics in machine-readable format, including baseline comparisons and a JavaScript Object Notation (JSON) report for further analysis. Tables and figures in this paper that are related to metrics are based on the 24-video corpus.
 
 The system rejects runs before tables and summary metrics are generated by checking for non-positive runtimes, missing rows, and out-of-range coverage values. If there exist valid artifacts for the current set configuration, the driver will reuse them, which supports the cache-aware design of the pipeline. However, hosted model calls can return unexpectedly various results depending on model patches and network conditions.
 
-\subsection{Post-hoc Scene-Selection Ablation}
+\subsection{Post Hoc Scene Selection Ablation}
 We conducted post-hoc scene selection ablation on a frozen evaluation snapshot. The same cached B1 scene timestamps were reused without rerunning the pipeline. We compared fixed caps of 10, 20 and 30 scenes with uniform 60 s and 30 s grids and recomputed the same within-15 s coverage metric. These comparisons are coverage-oriented diagnostics of scene-selection policy, not alternative semantic scene detection methods.
 
 \subsection{Qualitative Case Selection}
@@ -287,17 +281,17 @@ Overall & 24 & 0.193 & 0.433 & 2.25$\times$ \\
 \end{tabular}
 \end{table}
 
-Figure~\ref{fig:rtf} visualizes B0 and B1 RTF across content types using boxplots. Full pipeline processing remains below real-time for all 24 videos in the corpus.
+Fig.~\ref{fig:rtf} visualizes B0 and B1 RTF across content types using boxplots. Full pipeline processing remains below real-time for all 24 videos in the corpus.
 
 \begin{figure}[!t]
 \centering
 \includegraphics[width=\columnwidth]{fig_rtf_comparison.png}
-\caption{Processing Speed (Real-Time Factor) across content types. The box spans the interquartile range (IQR), the horizontal line marks the median, and the whiskers denote the rest of the distribution up to $1.5 \times \text{IQR}$. A lower RTF indicates faster processing (the red dashed line represents realtime RTF=1.0).}
+\caption{Processing Speed (Real-Time Factor) across content types. The box spans the interquartile range (IQR), the horizontal line marks the median, and the whiskers denote the rest of the distribution up to $1.5 \times \text{IQR}$. A lower RTF indicates faster processing (the red dashed line represents real-time RTF=1.0).}
 \label{fig:rtf}
 \end{figure}
 
 \subsection{Failure Cases and Practical Constraints}
-Coverage variation is driven by visual characteristics. Low-variance screencasts remain a stress case for motion-based scene detection, so the pipeline applies fallback sampling when heuristic triggers are sparse. In the evaluated corpus, this kept screencast mean coverage at 94.58\%, while the overall mean coverage reached 91.7\%. Figure~\ref{fig:coverage} shows the resulting content-type coverage distribution; the error bars summarize uncertainty within each six-video content-type group.
+Coverage variation is driven by visual characteristics. Low-variance screencasts remain a stress case for motion-based scene detection, so the pipeline applies fallback sampling when heuristic triggers are sparse. In the evaluated corpus, this kept screencast mean coverage at 94.58\%, while the overall mean coverage reached 91.7\%. Fig.~\ref{fig:coverage} shows the resulting content-type coverage distribution; the error bars summarize uncertainty within each six-video content-type group.
 
 \begin{table}[t]
 \caption{Content-Type Sensitivity (B1)}
@@ -318,10 +312,10 @@ Practical demo & 6 & 0.449 & 94.55\% & 51.83 & 0 \\
 \end{tabular}
 \end{table}
 
-According to results presented in table~\ref{tab:content_sensitivity}, screencast-type content appears to have the highest overall coverage when fallback sampling is used, while slide-centric content shows the lowest mean coverage, presumably because of rare slide transitions, which is typical for this type of content. Practical demos are the most saturated in terms of the mean detected scene count. All content types achieved coverage above 87\%.
+According to results presented in Table~\ref{tab:content_sensitivity}, screencast-type content appears to have the highest overall coverage when fallback sampling is used, while slide-centric content shows the lowest mean coverage, presumably because of rare slide transitions, which is typical for this type of content. Practical demos are the most saturated in terms of the mean detected scene count. All content types achieved coverage above 87\%.
 
 \begin{table}[t]
-\caption{Post-hoc Scene-Selection Ablation}
+\caption{Post Hoc Scene Selection Ablation}
 \label{tab:scene_ablation}
 \centering
 \footnotesize
@@ -352,8 +346,8 @@ Selected cases illustrate why coverage should be interpreted with content type. 
 \label{fig:coverage}
 \end{figure}
 
-\subsection{Interactive Latency and TTS}
-Separating Text-to-Speech (TTS) generation from corpus test runs avoids adding network-bound synthesis overhead to B1. A Google Cloud Neural TTS micro-benchmark on five sentence-level prompts showed median API latency of 2682.6~ms, while cached audio lookup took 0.06~ms. This spot-check excludes production network conditions, but still shows why request-level caching matters.
+\subsection{Interactive Latency and Speech Synthesis}
+Separating text-to-speech (TTS) generation from corpus test runs avoids adding network-bound synthesis overhead to B1. A Google Cloud Neural TTS micro-benchmark on five sentence-level prompts showed median API latency of 2682.6~ms, while cached audio lookup took 0.06~ms. This spot-check excludes production network conditions, but still shows why request-level caching matters.
 
 \section{Discussion}
 \subsection{Interpretation of Baseline Overhead}
