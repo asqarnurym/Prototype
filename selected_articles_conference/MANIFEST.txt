@@ -1,101 +1,93 @@
 Selected references for conference paper
-Synchronized with academic_paper/references.bib and the compiled IEEE reference order.
-Status date: 2026-06-10
+Synchronized with academic_paper/paper.tex and the compiled IEEE reference order.
+Status date: 2026-08-10
 
 Folder policy:
-- PDF entries are local article copies and are ignored by git.
+- PDF entries have local article copies and are ignored by git.
 - URL entries are small tracked source pointers for web/software references.
 - Reference numbers follow first appearance in the current manuscript, matching IEEE output.
-- Some local PDF filenames keep older bundle prefixes after reference pruning; the manifest entry number is authoritative.
+- Existing local filenames may retain historical R-prefixes; the entry numbers below are authoritative.
 
-01. [PDF] R01_Gernsbacher2015_VideoCaptionsBenefitEveryone.pdf
+01. [PDF]
     key: Gernsbacher2015
     title: Video Captions Benefit Everyone
     source: C:\Users\asqar\Desktop\Thesis\Article base\Video Captions Benefit Everyone.pdf
 
-02. [PDF] R02_Mayer2020_FiveWaysInstructionalVideo.pdf
-    key: Mayer2020
-    title: Five ways to increase the effectiveness of instructional video
-    source: C:\Users\asqar\Desktop\Thesis\Article base\Five ways to increase the effectiveness of instructional video.pdf
-
-03. [PDF] R03_Horlin2024_LectureCaptureDisabledNeurodivergent.pdf
+02. [PDF]
     key: Horlin2024
     title: I can be a "normal" student: the role of lecture capture in supporting disabled and neurodivergent students' participation in higher education
     source: C:\Users\asqar\Desktop\Thesis\Article base\I can be a "normal" student the role of lecture capture in supporting disabled and neurodivergent students' participation in higher education.pdf
 
-04. [PDF] R04_IngavelezGuerra2022_AutomaticAdaptationOER.pdf
+03. [PDF]
     key: IngavelezGuerra2022
     title: Automatic Adaptation of Open Educational Resources
     source: C:\Users\asqar\Desktop\Thesis\Article base\Automatic Adaptation of Open Educational Resources An Approach From a Multilevel Methodology Based on Students' Preferences.pdf
 
-05. [PDF] R05_MalakulPark2023_AutoSubtitleEducationalVideos.pdf
+04. [PDF]
     key: Malakul2023
     title: The effects of using an auto-subtitle system in educational videos
     source: C:\Users\asqar\Desktop\Thesis\Article base\The effects of using an auto-subtitle system in educational videos to facilitate learning for secondary school students learning comprehension, cognitive load, and satisfaction.pdf
 
-06. [PDF] R06_Mirzaei2018_ASRErrorsPartialSynchronizedCaption.pdf
+05. [PDF]
     key: Mirzaei2018
     title: Exploiting Automatic Speech Recognition Errors to Enhance Partial and Synchronized Caption
     source: C:\Users\asqar\Desktop\Thesis\Article base\Exploiting Automatic Speech Recognition Errors to Enhance Partial and Synchronized Caption for Facilitating Second Language Listening.pdf
 
-07. [URL] R07_W3CMediaReqs_MediaAccessibilityUserRequirements.url
+06. [URL]
     key: W3CMediaReqs
     title: Media Accessibility User Requirements
     source: https://www.w3.org/TR/media-accessibility-reqs/
 
-08. [PDF] R10_Lange2020_ImprovingOnlineVideoLectures.pdf
+07. [PDF]
     key: Lange2020
     title: Improving online video lectures: learning challenges created by media
     source: C:\Users\asqar\Desktop\Thesis\Article base\Improving online video lectures learning challenges created by media.pdf
 
-09. [PDF] R11_Kruger2016_MeasuringCognitiveLoadVideo.pdf
-    key: Kruger2016
-    title: Measuring cognitive load in the presence of educational video
-    source: C:\Users\asqar\Desktop\Thesis\Article base\Measuring cognitive load in the presence of educational video Towards a multimodal methodology.pdf
-
-10. [PDF] R12_LeCunff2024_NeurodiversityCognitiveLoadOnline.pdf
+08. [PDF]
     key: LeCunff2024
     title: Neurodiversity and cognitive load in online learning
     source: C:\Users\asqar\Desktop\Thesis\Article base\Neurodiversity and cognitive load in online learning A focus group study.pdf
 
-11. [PDF] R13_Malik2020_ASRSurvey.pdf
+09. [PDF]
     key: Malik2020
     title: Automatic speech recognition: a survey
     source: C:\Users\asqar\Desktop\Thesis\Article base\Automatic speech recognition a survey.pdf
 
-12. [PDF] R14_Radford2022_WhisperLargeScaleWeakSupervision.pdf
+10. [PDF]
     key: Radford2022
     title: Robust Speech Recognition via Large-Scale Weak Supervision
     source: C:\Users\asqar\Desktop\Thesis\Article base\Robust Speech Recognition via Large-Scale Weak Supervision.pdf
 
-13. [PDF] R15_Bain2023_WhisperX.pdf
+11. [PDF]
     key: Bain2023
     title: WhisperX: Time-Accurate Speech Transcription of Long-Form Audio
     source: C:\Users\asqar\Desktop\Thesis\Article base\WhisperX Time-Accurate Speech Transcription of Long-Form Audio.pdf
 
-14. [PDF] R16_Wagner2024_CrisperWhisper.pdf
+12. [PDF]
     key: Wagner2024
     title: CrisperWhisper: Accurate Timestamps on Verbatim Speech Transcriptions
     source: C:\Users\asqar\Desktop\Thesis\Article base\CrisperWhisper_Accurate Timestamps on Verbatim Speech Transcriptions.pdf
 
-15. [PDF] R18_Natalie2021_CollaborativeAuthoringVideoSceneDescriptions.pdf
+13. [PDF]
     key: Natalie2021
     title: The Efficacy of Collaborative Authoring of Video Scene Descriptions
-    source: D:\Users\asqar\Desktop\Thesis\Article base\The_Efficacy_of_Collaborative_Authoring_of_Video_S.pdf
+    source: C:\Users\asqar\Desktop\Thesis\Article base\The_Efficacy_of_Collaborative_Authoring_of_Video_S.pdf
 
-16. [URL] R16_PySceneDetect_Software.url
+14. [URL]
     key: PySceneDetect
     title: PySceneDetect: Intelligent video scene change detection and analysis tool
     source: https://github.com/Breakthrough/PySceneDetect
 
-17. [PDF] R20_GeminiTeam2025_Gemini25.pdf
+15. [PDF]
     key: GeminiTeam2025
     title: Gemini 2.5: Pushing the Frontier with Advanced Reasoning, Multimodality, Long Context, and Next Generation Agentic Capabilities
     source: C:\Users\asqar\Desktop\Thesis\Article base\Gemini 2.5_ Pushing the Frontier with Advanced Reasoning, Multimodality, Long Context, and Next Generation Agentic Capabilities.pdf
 
 Removed from active conference set:
+- Mayer2020: removed because its instructional-video design focus is not central to the engineering prototype argument.
+- Kruger2016: removed from the active manuscript during reference pruning.
 - WCAG21: folded into W3CMediaReqs for the 6-page page budget.
 - W3CMediaAccessible: folded into W3CMediaReqs for the 6-page page budget.
-- Machacek2023: no longer cited after the ASR-confidence caveat was kept as a methodological limitation without that source.
+- Machacek2023: removed from the active citation set.
 - CastroAlonso2021: no longer cited in the current manuscript.
-- R18_Natalie2021_CollaborativeSceneDescriptions.url: replaced by the local PDF copy listed above.
+- Natalie2021 URL pointer: replaced by the local PDF copy listed above.
